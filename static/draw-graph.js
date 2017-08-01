@@ -254,7 +254,7 @@ function initialize(name) {
         .await(render);
 }
 
-function predirection() {
+function getNewDirection() {
     var url_direction = "/api/predirection/" + state;
     d3.json(url_direction, function(info) {
         // console.log(edges[0]);

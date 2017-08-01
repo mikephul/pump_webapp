@@ -209,7 +209,7 @@
 						type="button"
 						class="btn btn-default"
 						value="Predirection"
-						onclick="predirection()" >
+						onclick="getNewDirection()" >
 
 						<input name="updateButton"
 						style="border-radius: 0px 4px 4px 0px;" 
@@ -760,7 +760,7 @@
 						<label class="radio-inline">
 						  <input type="radio" name="optradio" onclick = "get_top_five_lowest_flow_edges()">Lowest Flow
 						</label>
-					</flow>
+					</form>
 				</div>					
 				<div class="col-xs-2">		
 					<div class="input-group">
@@ -841,6 +841,80 @@
 
 		</div>        
 	</section>
+
+
+	<section id="fourth" class="fourth-section" >
+		<div class="container">
+
+			<div class="row" >			
+				<div class="col-xs-12">
+					<h1 style="margin-top:200">Dynamic</h1>
+					<hr>
+				</div>
+			</div>
+
+				<div class="col-xs-3">
+					<h3>Dynamic Table</h3>
+				</div>
+
+			<form>		
+				<label class="radio-inline">
+				  <input id="dynamic_button" type="radio" name="optradio" onclick = "getValvesDynamic()">Valves
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getSourcesDynamic()">Sources
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getCustomersDynamic()">Customers
+				</label>
+				<label class="radio-inline">
+				<input type="radio" name="optradio" onclick = "getEdgesDynamic()">Edges
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getNodesDynamic()">Nodes
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getKeyNodesDynamicLowest()">Key Nodes(Five Lowest)
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getKeyNodesDynamicHighest()">Key Nodes(Five Highest)
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getKeyEdgesDynamicLowest()">Key Edges(Five Lowest)
+				</label>
+				<label class="radio-inline">
+				  <input type="radio" name="optradio" onclick = "getKeyEdgesDynamicHighest()">Key Edges(Five Highest)
+				</label>
+			</form>
+				<div class="col-xs-2">		
+					<div class="input-group">
+						<input id="search_dynamic_edge_id" type="text" class="form-control" placeholder="Edge id">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" onclick="get_specified_edge_dynamic()">Go!</button>
+						</span>
+					</div>
+					<div class="input-group">
+						<input id="search_dynamic_node_id" type="text" class="form-control" placeholder="Node id">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" onclick="get_specified_node_dynamic()">Go!</button>
+						</span>
+					</div>
+				</div>
+
+
+			<div class="row" >          
+				<div class="col-xs-3"></div>                       		
+				<div class="col-xs-6">                        		
+					<div id="dynamic_table_label" style="height:300px; overflow-y:auto">
+					</div>
+
+				</div> 
+				<div class="col-xs-3"></div>                       	                      
+			</div>
+
+		</div>        
+	</section>
+
 
 
 	<script>
