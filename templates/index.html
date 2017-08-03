@@ -99,21 +99,29 @@
     <div w3-include-html="{{ url_for('static', filename='navbar.html') }}"></div>
     <!-- Off Canvas Menu -->
     <nav id="offCanvasMenu" class="navmenu navmenu-default navmenu-fixed-right offcanvas" role="navigation" style="padding-left:-600">
-        <a class="navmenu-brand" href="./index.html"><b>Seeing Theory</b></a>
+        <a class="navmenu-brand" href="./index.html"><b>Flow and Pressure</b></a>
+        
+        <p style="padding-left:15; padding-right:15">To solve for the optimal energy flow and pressure of the network, use the buttons below the network: </br></br>
+            1. Predirection - Redirect the network to get the feasible minimum energy flow direction. </br></br>
+            2. Imaginary - Solve the convex relaxation problem to find minimum energy flow and pressure. </br></br>
+            3. Improve solution - Improve the existing constraint gap from the pre-solve method to achieve better accuracy. </br></br>
+            View the information of the water network using the panel on the left. Enjoy!
+        </p>
+        
     </nav>
     <!-- Intro Section -->
     <section id="intro" class="intro-section">
         <div class="container">
             <div class="row">
                 <div class="col-xs-12">
-                    <h1>The Network</h1>
+                    <h1>Flow & Pressure</h1>
                     <p class="text-center">An interactive exploration of water distribution network</p>
                 </div>
             </div>
             <div class="row" style="padding-top:20px">
                 <div class="col-xs-8">
                     <svg id="graph-canvas" width="750" height="500"></svg>
-                    <div class="btn-group" style="padding-top:30px">
+                    <div class="btn-group" style="padding-top:50px">
                         <input name="small" type="button" class="btn btn-default" value="Small" onclick="initialize(1)">
                         <input name="showdirection" id="direction-button" type="button" class="btn btn-danger" style="width: 70px !important;" value="Pause" onclick="loopAnimation()">
                         <input name="predirection" type="button" data-toggle="tooltip" title="Find the lowest energy flow and correct the flow direction." class="btn btn-default " value="Predirection" onclick="getNewDirection()">
@@ -127,7 +135,13 @@
                         </div>
                         
                     </div> 
+                    <div class="row"> 
+                    </div>
+                    
                 </div>
+
+                
+
                 <div class="col-xs-4">
                     <div class="panel-group" id="accordion">
 
@@ -135,7 +149,7 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
 							        <a data-toggle="collapse" data-target="#collapseOne" 
-							           href="#">
+							           href="#" style="color: grey;">
 							          Network
 							        </a>
       							</h4>
@@ -143,42 +157,30 @@
 
                             <div id="collapseOne" class="panel-collapse collapse in">
                                 <div class="panel-body">
-                                    <table class="table">                        
-                                        <tbody>
-                                            <tr>
-                                                <th>Name</th>
-                                                <td id="td-name" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Nodes</th>
-                                                <td id="td-num_node" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Edges</th>
-                                                <td id="td-num_edge" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Customers</th>
-                                                <td id="td-num_customer" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Sources</th>
-                                                <td id="td-num_source" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Tanks</th>
-                                                <td id="td-num_tank" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Pumps</th>
-                                                <td id="td-num_pump" style="text-align:center"></td>
-                                            </tr>
-                                            <tr>
-                                                <th># Valves</th>
-                                                <td id="td-num_valve" style="text-align:center"></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick="getSummary()">Overview
+                                    </label>
+
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick = "plotPressureHist()">Pressure
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick = "plotFlowHist()">Flow
+                                    </label>
+                                    </br>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick = "plotGapHist()">Gap
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick="plotEnergyLossHist()">Energy Loss
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="optradio" onclick="plotEnergyPumpHist()">Pump Energy
+                                    </label>
+                                    <div id="dynamic-table-summary" style="padding-top: 20;"></div>
+                                                                                            
+
+                                    <svg id="summary-canvas" height="0"></svg>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +188,7 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
 							        <a data-toggle="collapse" data-target="#collapseTwo" 
-							           href="#" class="collapsed">
+							           href="#" class="collapsed" style="color: grey;">
 							          Node
 							        </a>
 						        </h4>
@@ -224,7 +226,7 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
 						        <a data-toggle="collapse" data-target="#collapseThree"
-						           href="#" class="collapsed">
+						           href="#" class="collapsed" style="color: grey;">
 						          Edge
 						        </a>
 						      </h4>
@@ -259,7 +261,7 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                 <a data-toggle="collapse" data-target="#collapseFour"
-                                   href="#" class="collapsed">
+                                   href="#" class="collapsed" style="color: grey;">
                                   Pump
                                 </a>
                               </h4>
@@ -279,523 +281,11 @@
                         </div>
 
                     </div>
+
+                    
                 </div>                        
             </div>
         </div>               
-    </section>
-
-    <section id="first" class="first-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-xs-12">
-                    <h1>Summary</h1>
-                    <hr>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-2"> </div>
-                <div id="summary" class="col-xs-4">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th colspan="2" style="text-align:center;">Network information</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th>Name</th>
-                                <td id="td-name" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Nodes</th>
-                                <td id="td-num_node" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Edges</th>
-                                <td id="td-num_edge" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Customers</th>
-                                <td id="td-num_customer" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Sources</th>
-                                <td id="td-num_source" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Tanks</th>
-                                <td id="td-num_tank" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Pumps</th>
-                                <td id="td-num_pump" style="text-align:center"></td>
-                            </tr>
-                            <tr>
-                                <th># Valves</th>
-                                <td id="td-num_valve" style="text-align:center"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-xs-4">
-                    <svg id="pie-canvas" style="margin-top:-20"></svg>
-                </div>
-                <div class="col-xs-2"> </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h2>Performance</h2>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-4">
-                    <svg id="gap-canvas" style="margin-top:20"></svg>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-4">
-                    <svg id="energy-canvas" style="margin-top:20"></svg>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-4">
-                    <svg id="pump-energy-canvas" style="margin-top:20"></svg>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-4">
-                    <svg id="pressure-canvas" style="margin-top:20"></svg>
-                </div>
-            </div>
-            <div class="row" style="padding-top:40">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-4">
-                    <svg id="flow-canvas" style="margin-top:20"></svg>
-                </div>
-            </div>
-        </div>
-        <!-- <div class="nextSection">
-            <a class="page-scroll" href="#first">
-                joke
-            </a>
-        </div> -->
-    </section>
-    
-    <section id="second" class="second-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-xs-12">
-                    <h1 style="margin-top:200">Node Information</h1>
-                    <hr>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h3>Customer</h3>
-                </div>
-                <div class="col-xs-7"></div>
-            </div>
-            <div class="row">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-6">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="text-align:center">#</th>
-                                <th style="text-align:center">id</th>
-                                <th style="text-align:center">Demand</th>
-                                <th style="text-align:center">Flow In</th>
-                                <th style="text-align:center">Flow Satisfy?</th>
-                                <th style="text-align:center">Min Pressure</th>
-                                <th style="text-align:center">Head</th>
-                                <th style="text-align:center">Head Satisfy?</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="tr-id-1" class="tr-class-1">
-                                <th style="text-align:center">1</th>
-                                <td id="customers-id1" style="text-align:center"></td>
-                                <td id="customers-demand1" style="text-align:center"></td>
-                                <td id="customers-flow_in1" style="text-align:center"></td>
-                                <td id="customers-flow_satisfied1" style="text-align:center"></td>
-                                <td id="customers-min_pressure1" style="text-align:center"></td>
-                                <td id="customers-pressure1" style="text-align:center"></td>
-                                <td id="customers-pressure_satisfied1" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-2" class="tr-class-2">
-                                <th style="text-align:center">2</th>
-                                <td id="customers-id2" style="text-align:center"></td>
-                                <td id="customers-demand2" style="text-align:center"></td>
-                                <td id="customers-flow_in2" style="text-align:center"></td>
-                                <td id="customers-flow_satisfied2" style="text-align:center"></td>
-                                <td id="customers-min_pressure2" style="text-align:center"></td>
-                                <td id="customers-pressure2" style="text-align:center"></td>
-                                <td id="customers-pressure_satisfied2" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-3" class="tr-class-3">
-                                <th style="text-align:center">3</th>
-                                <td id="customers-id3" style="text-align:center"></td>
-                                <td id="customers-demand3" style="text-align:center"></td>
-                                <td id="customers-flow_in3" style="text-align:center"></td>
-                                <td id="customers-flow_satisfied3" style="text-align:center"></td>
-                                <td id="customers-min_pressure3" style="text-align:center"></td>
-                                <td id="customers-pressure3" style="text-align:center"></td>
-                                <td id="customers-pressure_satisfied3" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-4" class="tr-class-4">
-                                <th style="text-align:center">4</th>
-                                <td id="customers-id4" style="text-align:center"></td>
-                                <td id="customers-demand4" style="text-align:center"></td>
-                                <td id="customers-flow_in4" style="text-align:center"></td>
-                                <td id="customers-flow_satisfied4" style="text-align:center"></td>
-                                <td id="customers-min_pressure4" style="text-align:center"></td>
-                                <td id="customers-pressure4" style="text-align:center"></td>
-                                <td id="customers-pressure_satisfied4" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-5" class="tr-class-5">
-                                <th style="text-align:center">5</th>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-xs-3"></div>
-            </div>
-            <div class="row" style="padding-top:20">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h3>Source</h3>
-                </div>
-                <div class="col-xs-7"></div>
-            </div>
-            <div class="row">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-6">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="text-align:center">#</th>
-                                <th style="text-align:center">id</th>
-                                <th style="text-align:center">Flow Out</th>
-                                <th style="text-align:center">Min Pressure</th>
-                                <th style="text-align:center">Head</th>
-                                <th style="text-align:center">Head Satisfy?</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="tr-id-1" class="tr-class-1">
-                                <th style="text-align:center">1</th>
-                                <td id="sources-id1" style="text-align:center"></td>
-                                <td id="sources-flow_out1" style="text-align:center"></td>
-                                <td id="sources-min_pressure1" style="text-align:center"></td>
-                                <td id="sources-pressure1" style="text-align:center"></td>
-                                <td id="sources-pressure_satisfied1" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-2" class="tr-class-2">
-                                <th style="text-align:center">2</th>
-                                <td id="sources-id2" style="text-align:center"></td>
-                                <td id="sources-flow_out2" style="text-align:center"></td>
-                                <td id="sources-min_pressure2" style="text-align:center"></td>
-                                <td id="sources-pressure2" style="text-align:center"></td>
-                                <td id="sources-pressure_satisfied2" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-3" class="tr-class-3">
-                                <th style="text-align:center">3</th>
-                                <td id="sources-id3" style="text-align:center"></td>
-                                <td id="sources-flow_out3" style="text-align:center"></td>
-                                <td id="sources-min_pressure3" style="text-align:center"></td>
-                                <td id="sources-pressure3" style="text-align:center"></td>
-                                <td id="sources-pressure_satisfied3" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-4" class="tr-class-4">
-                                <th style="text-align:center">4</th>
-                                <td id="sources-id4" style="text-align:center"></td>
-                                <td id="sources-flow_out4" style="text-align:center"></td>
-                                <td id="sources-min_pressure4" style="text-align:center"></td>
-                                <td id="sources-pressure4" style="text-align:center"></td>
-                                <td id="sources-pressure_satisfied4" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-5" class="tr-class-5">
-                                <th style="text-align:center">5</th>
-                                <td id="sources-id5" style="text-align:center"></td>
-                                <td id="sources-flow_out5" style="text-align:center"></td>
-                                <td id="sources-min_pressure5" style="text-align:center"></td>
-                                <td id="sources-pressure5" style="text-align:center"></td>
-                                <td id="sources-pressure_satisfied5" style="text-align:center"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-xs-3"></div>
-            </div>
-            <div class="row" style="padding-top:20">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h3>Key Node</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-4"></div>
-                <div class="col-xs-3">
-                    <form>
-                        <label class="radio-inline">
-                            <input id="top-five-pressure" type="radio" name="optradio" onclick="get_top_five_highest_pressure_nodes()">Highest Pressure
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="optradio" onclick="get_top_five_lowest_pressure_nodes()">Lowest Pressure
-                        </label>
-                    </form>
-                </div>
-                <div class="col-xs-2">
-                    <div class="input-group">
-                        <input id="search_node_id" type="text" class="form-control" placeholder="Node id">
-                        <span class="input-group-btn">
-							<button class="btn btn-default" type="button" onclick="get_specified_node()">Go!</button>
-						</span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-6">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="text-align:center">#</th>
-                                <th style="text-align:center">id</th>
-                                <th style="text-align:center">Min Pressure</th>
-                                <th style="text-align:center">Head</th>
-                                <th style="text-align:center">Head Satisfy?</th>
-                                <th style="text-align:center">Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="tr-id-1" class="tr-class-1">
-                                <th style="text-align:center">1</th>
-                                <td id="top_five_pressure-id1" style="text-align:center"></td>
-                                <td id="top_five_pressure-type1" style="text-align:center"></td>
-                                <td id="top_five_pressure-min_pressure1" style="text-align:center"></td>
-                                <td id="top_five_pressure-pressure1" style="text-align:center"></td>
-                                <td id="top_five_pressure-satisfied1" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-2" class="tr-class-2">
-                                <th style="text-align:center">2</th>
-                                <td id="top_five_pressure-id2" style="text-align:center"></td>
-                                <td id="top_five_pressure-type2" style="text-align:center"></td>
-                                <td id="top_five_pressure-min_pressure2" style="text-align:center"></td>
-                                <td id="top_five_pressure-pressure2" style="text-align:center"></td>
-                                <td id="top_five_pressure-satisfied2" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-3" class="tr-class-3">
-                                <th style="text-align:center">3</th>
-                                <td id="top_five_pressure-id3" style="text-align:center"></td>
-                                <td id="top_five_pressure-type3" style="text-align:center"></td>
-                                <td id="top_five_pressure-min_pressure3" style="text-align:center"></td>
-                                <td id="top_five_pressure-pressure3" style="text-align:center"></td>
-                                <td id="top_five_pressure-satisfied3" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-4" class="tr-class-4">
-                                <th style="text-align:center">4</th>
-                                <td id="top_five_pressure-id4" style="text-align:center"></td>
-                                <td id="top_five_pressure-type4" style="text-align:center"></td>
-                                <td id="top_five_pressure-min_pressure4" style="text-align:center"></td>
-                                <td id="top_five_pressure-pressure4" style="text-align:center"></td>
-                                <td id="top_five_pressure-satisfied4" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-5" class="tr-class-5">
-                                <th style="text-align:center">5</th>
-                                <td id="top_five_pressure-id5" style="text-align:center"></td>
-                                <td id="top_five_pressure-type5" style="text-align:center"></td>
-                                <td id="top_five_pressure-min_pressure5" style="text-align:center"></td>
-                                <td id="top_five_pressure-pressure5" style="text-align:center"></td>
-                                <td id="top_five_pressure-satisfied5" style="text-align:center"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="third" class="third-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-xs-12">
-                    <h1 style="margin-top:200">Edge Information</h1>
-                    <hr>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h3>Valve</h3>
-                </div>
-                <div class="col-xs-7"></div>
-            </div>
-            <div class="row">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-6">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="text-align:center">#</th>
-                                <th style="text-align:center">id</th>
-                                <th style="text-align:center">Head id</th>
-                                <th style="text-align:center">Tail id</th>
-                                <th style="text-align:center">Flow</th>
-                                <th style="text-align:center">Valve Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="tr-id-1" class="tr-class-1">
-                                <th style="text-align:center">1</th>
-                                <td id="valves-edge_id1" style="text-align:center"></td>
-                                <td id="valves-head_id1" style="text-align:center"></td>
-                                <td id="valves-tail_id1" style="text-align:center"></td>
-                                <td id="valves-valve_flow1" style="text-align:center"></td>
-                                <td id="valves-valve_status1" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-2" class="tr-class-2">
-                                <th style="text-align:center">2</th>
-                                <td id="valves-edge_id2" style="text-align:center"></td>
-                                <td id="valves-head_id2" style="text-align:center"></td>
-                                <td id="valves-tail_id2" style="text-align:center"></td>
-                                <td id="valves-valve_flow2" style="text-align:center"></td>
-                                <td id="valves-valve_status2" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-3" class="tr-class-3">
-                                <th style="text-align:center">3</th>
-                                <td id="valves-edge_id3" style="text-align:center"></td>
-                                <td id="valves-head_id3" style="text-align:center"></td>
-                                <td id="valves-tail_id3" style="text-align:center"></td>
-                                <td id="valves-valve_flow3" style="text-align:center"></td>
-                                <td id="valves-valve_status3" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-4" class="tr-class-4">
-                                <th style="text-align:center">4</th>
-                                <td id="valves-edge_id4" style="text-align:center"></td>
-                                <td id="valves-head_id4" style="text-align:center"></td>
-                                <td id="valves-tail_id4" style="text-align:center"></td>
-                                <td id="valves-valve_flow4" style="text-align:center"></td>
-                                <td id="valves-valve_status4" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-5" class="tr-class-5">
-                                <th style="text-align:center">5</th>
-                                <td id="valves-edge_id5" style="text-align:center"></td>
-                                <td id="valves-head_id5" style="text-align:center"></td>
-                                <td id="valves-tail_id5" style="text-align:center"></td>
-                                <td id="valves-valve_flow5" style="text-align:center"></td>
-                                <td id="valves-valve_status5" style="text-align:center"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-xs-3"></div>
-            </div>
-            <div class="row" style="padding-top:20">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-3">
-                    <h3>Key Edge</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-4"></div>
-                <div class="col-xs-3">
-                    <form>
-                        <label class="radio-inline">
-                            <input id="top-five-flow" type="radio" name="optradio" onclick="get_top_five_highest_flow_edges()">Highest Flow
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="optradio" onclick="get_top_five_lowest_flow_edges()">Lowest Flow
-                        </label>
-                    </form>
-                </div>
-                <div class="col-xs-2">
-                    <div class="input-group">
-                        <input id="search_edge_id" type="text" class="form-control" placeholder="Edge id">
-                        <span class="input-group-btn">
-							<button class="btn btn-default" type="button" onclick="get_specified_edge()">Go!</button>
-						</span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-3"></div>
-                <div class="col-xs-6">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="text-align:center">#</th>
-                                <th style="text-align:center">id</th>
-                                <th style="text-align:center">Head id</th>
-                                <th style="text-align:center">Tail id</th>
-                                <th style="text-align:center">Type</th>
-                                <th style="text-align:center">Flow</th>
-                                <th style="text-align:center">No Gap?</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="tr-id-1" class="tr-class-1">
-                                <th style="text-align:center">1</th>
-                                <td id="top_five_flow-edge_id1" style="text-align:center"></td>
-                                <td id="top_five_flow-head_id1" style="text-align:center"></td>
-                                <td id="top_five_flow-tail_id1" style="text-align:center"></td>
-                                <td id="top_five_flow-type1" style="text-align:center"></td>
-                                <td id="top_five_flow-flow1" style="text-align:center"></td>
-                                <td id="top_five_flow-gap1" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-2" class="tr-class-2">
-                                <th style="text-align:center">2</th>
-                                <td id="top_five_flow-edge_id2" style="text-align:center"></td>
-                                <td id="top_five_flow-head_id2" style="text-align:center"></td>
-                                <td id="top_five_flow-tail_id2" style="text-align:center"></td>
-                                <td id="top_five_flow-type2" style="text-align:center"></td>
-                                <td id="top_five_flow-flow2" style="text-align:center"></td>
-                                <td id="top_five_flow-gap2" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-3" class="tr-class-3">
-                                <th style="text-align:center">3</th>
-                                <td id="top_five_flow-edge_id3" style="text-align:center"></td>
-                                <td id="top_five_flow-head_id3" style="text-align:center"></td>
-                                <td id="top_five_flow-tail_id3" style="text-align:center"></td>
-                                <td id="top_five_flow-type3" style="text-align:center"></td>
-                                <td id="top_five_flow-flow3" style="text-align:center"></td>
-                                <td id="top_five_flow-gap3" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-4" class="tr-class-4">
-                                <th style="text-align:center">4</th>
-                                <td id="top_five_flow-edge_id4" style="text-align:center"></td>
-                                <td id="top_five_flow-head_id4" style="text-align:center"></td>
-                                <td id="top_five_flow-tail_id4" style="text-align:center"></td>
-                                <td id="top_five_flow-type4" style="text-align:center"></td>
-                                <td id="top_five_flow-flow4" style="text-align:center"></td>
-                                <td id="top_five_flow-gap4" style="text-align:center"></td>
-                            </tr>
-                            <tr id="tr-id-5" class="tr-class-5">
-                                <th style="text-align:center">5</th>
-                                <td id="top_five_flow-edge_id5" style="text-align:center"></td>
-                                <td id="top_five_flow-head_id5" style="text-align:center"></td>
-                                <td id="top_five_flow-tail_id5" style="text-align:center"></td>
-                                <td id="top_five_flow-type5" style="text-align:center"></td>
-                                <td id="top_five_flow-flow5" style="text-align:center"></td>
-                                <td id="top_five_flow-gap5" style="text-align:center"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </section>
 
     <script>
@@ -858,6 +348,38 @@
     $(document).ready(function(){
 	    $('[data-toggle="tooltip"]').tooltip(); 
 	});
+
+    function plotPressureHist() {
+        d3.select("#dynamic-table-summary").selectAll("*").remove()
+        d3.select("#summary-canvas").selectAll("*").remove()
+        var pressure = nodes.map(function(d) { return d.pressure; });
+        histogram("#summary-canvas", pressure, "Pressure", pressureScale);
+    }
+
+    function plotFlowHist() {
+        d3.select("#dynamic-table-summary").selectAll("*").remove()
+        d3.select("#summary-canvas").selectAll("*").remove()
+        var flow = edges.map(function(d) { return d.flow; });
+        histogram("#summary-canvas", flow, "Flow");
+    }
+
+    function plotGapHist() {
+        d3.select("#dynamic-table-summary").selectAll("*").remove()
+        d3.select("#summary-canvas").selectAll("*").remove()        
+        plot_iter("#summary-canvas", gapHistory, "Gap");
+    }
+
+    function plotEnergyLossHist() {
+        d3.select("#dynamic-table-summary").selectAll("*").remove()
+        d3.select("#summary-canvas").selectAll("*").remove()        
+        plot_iter("#summary-canvas", energyHistory, "Energy Loss");
+    }
+
+    function plotEnergyPumpHist() {
+        d3.select("#dynamic-table-summary").selectAll("*").remove()
+        d3.select("#summary-canvas").selectAll("*").remove()        
+        plot_iter("#summary-canvas", pumpEnergyHistory, "Pump Energy");
+    }
 
     function test(error, info) {
         updateTable();

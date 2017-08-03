@@ -78,8 +78,11 @@ function getPressureScale() {
         .map(function(o) {
             return o.pressure;
         });
+    
     var mean = arr.mean(pressures);
     var sd = arr.standardDeviation(pressures)
+    console.log('pmax', mean + 2 * sd);
+    console.log('pmin', mean - 2 * sd);
     var color = d3.scale.linear().domain([mean - 2 * sd, mean + 2 * sd])
         .interpolate(d3.interpolateHcl)
         .range([d3.rgb("#B5F394"), d3.rgb("#2c7bb6")]);
@@ -200,9 +203,9 @@ function drawEdges(xScale, yScale) {
 
 function drawGraph() {
     var scale = getPositionScale(nodes);
-    var color = getPressureScale(nodes);
+    pressureScale = getPressureScale(nodes);
     drawEdges(scale.x, scale.y);
-    drawNodes(scale.x, scale.y, color);
+    drawNodes(scale.x, scale.y, pressureScale);
 }
 
 function render(error, node_info, edge_info, summary) {
@@ -283,12 +286,29 @@ function showDirection() {
 }
 
 function update(error, info) {
+    console.log(info)
     nodes = _.merge(nodes, info.nodes);
-    edges = _.merge(edges, info.edges);
+    edges = _.merge(edges, info.edges); 
 
-    pressureScale = getPressureScale();
-    flowScale = getFlowScale();
+    // Imaginary Phase
+    if ((typeof(pressureScale) == "undefined") || (typeof(flowScale) == "undefined")) {
+        pressureScale = getPressureScale(); 
+        flowScale = getFlowScale();
+    }
+    var isDisable = document.getElementById("iteration-button").classList[2] == "disabled";
+    if (isDisable) {
+        document.getElementById("iteration-button").classList.remove("disabled");     
+    }
 
+    // Iteration Phase
+    if ((typeof(info.energy_loss) != "undefined") && 
+        (typeof(info.gap) != "undefined") &&
+        (typeof(info.energy_pump) != "undefined")) {
+        energyHistory.push.apply(energyHistory, info.energy_loss);
+        gapHistory.push.apply(gapHistory, info.gap);
+        pumpEnergyHistory.push.apply(pumpEnergyHistory, info.energy_pump);   
+    }
+        
     d3.select("#graph-canvas").selectAll("line")
         .transition().duration(2000)
         .attr("stroke-width", function(d) {
@@ -298,10 +318,14 @@ function update(error, info) {
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == JUNCTION;
         })
-        .transition().duration(2000)
+        .transition().duration(500)
+        .attr("r", 6)
+        .transition().duration(1000)
         .attr("fill", function(d) {
             return pressureScale(d.pressure);
-        });
+        })        
+        .transition().duration(500)
+        .attr("r", 4);
 
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == CONSUMER;
@@ -314,9 +338,7 @@ function update(error, info) {
             return "white"
         });
 
-    updateTable();
-    document.getElementById("iteration-button").classList.remove("disabled"); 
-
+    // updateTable();
 }
 
 function update_node(error, info) {
@@ -387,5 +409,5 @@ function updateData3() {
     console.log(url)
     d3.queue()
         .defer(d3.json, url)
-        .await(test);
+        .await(update);
 }

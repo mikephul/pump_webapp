@@ -191,7 +191,7 @@ function writePumpsDynamic(edges) {
     var xMax = parseFloat(json_data[0].flow)/1000
     var q = linspace(0, xMax, 20)
     var dh = q.map(function(i){return dh_max + gamma*Math.pow(i,2)})
-    plot("#pump-curve-canvas", pump_data.x, pump_data.y, q, dh, "Pressure")
+    plot_area("#pump-curve-canvas", pump_data.x, pump_data.y, q, dh, "Pressure")
 
     var column = ['edge_id', 'edge_type', 'head_id', 'tail_id', 'flow', 'gap']
     var header = ['ID', 'Type', 'Head ID', 'TAIL ID', 'Flow', 'Gap'];
@@ -255,15 +255,13 @@ function get_specified_edge() {
     d3.json(url_specified_edge, writeTopFiveFlowTable);
 }
 
-function writeSummaryTable(summary) {
-    d3.select("#td-name").text(summary.name);
-    d3.select("#td-num_node").text(summary.num_node);
-    d3.select("#td-num_edge").text(summary.num_edge);
-    d3.select("#td-num_customer").text(summary.num_customer);
-    d3.select("#td-num_source").text(summary.num_source);
-    d3.select("#td-num_tank").text(summary.num_tank);
-    d3.select("#td-num_pump").text(summary.num_pump);
-    d3.select("#td-num_valve").text(summary.num_valve);
+function writeSummaryTable(summary) {    
+    d3.select("#dynamic-table-summary").selectAll("*").remove()
+    d3.select("#summary-canvas").selectAll("*").remove()   
+    d3.select("#summary-canvas").attr("height", 0);
+    var rows = ["name", "num_node", "num_edge", "num_customer", "num_source", "num_tank", "num_pump", "num_valve"]
+    var header = ["Name", "# Nodes", "# Edges", "# Customers", "# Sources", "# Tanks", "# Pumps", "# Valves"]
+    createVerticleTable("#dynamic-table-summary", summary, rows, header);
 }
 
 function writeCustomersTable(nodes) {
@@ -495,7 +493,145 @@ function print_test() {
     console.log("testtest");
 }
 
+function createVerticleTable(label_identifier, data, rows, header) {    
+    d3.select(label_identifier).selectAll('table').remove()
+    var table = d3.select(label_identifier).append('table')
+        .style("width", "100%")
+        .attr("class", "table");        
+    
+    var zip = rows.map(function(d, i) {
+        return {"row": header[i], "value": data[d]}        
+    })
 
+    var tbody = table.append('tbody')
+    var rows = tbody.selectAll('tr')
+                .data(zip)
+                .enter()
+                .append('tr')
+                .on("mouseover", function(d) {
+                    d3.select(this)
+                      .style('background-color', "#F9F2F4");
+
+                      var node_type = -1;
+                      switch(d.row) {  
+                        case "# Nodes":
+                            node_type = 0; 
+                            break;                       
+                        case "# Customers": 
+                            node_type = CONSUMER; 
+                            break;
+                        case "# Sources":
+                            node_type = SOURCE; 
+                            break;
+                        case "# Tanks":
+                            node_type = TANK; 
+                            break;                     
+                      }
+
+                      var edge_type = -1;
+                      switch(d.row) {  
+                        case "# Edges":
+                            edge_type = 0; 
+                            break;                       
+                        case "# Pumps": 
+                            edge_type = PUMP; 
+                            break;
+                        case "# Valves":
+                            edge_type = VALVE; 
+                            break;                                         
+                      }    
+
+                      if (node_type > 0) {
+                        d3.select("#graph-canvas").selectAll("circle")
+                        .filter(function(d) {
+                            return d.node_type == node_type;
+                        })
+                        .moveToFront()
+                        .attr("r", 8);
+                      } else if (node_type == 0){
+                        d3.select("#graph-canvas").selectAll("circle")                        
+                        .moveToFront()
+                        .attr("r", 8);
+                      }
+
+                      if (edge_type > 0) {
+                        d3.select("#graph-canvas").selectAll("line")
+                        .filter(function(d) {
+                            return d.edge_type == edge_type;
+                        })                        
+                        .attr("stroke", "red");
+                                  
+                      } else if (edge_type == 0){
+                        d3.select("#graph-canvas").selectAll("line")                                                
+                        .attr("stroke", "red");
+                      }
+                      
+                })
+                .on("mouseout", function(d) {
+                    d3.select(this)
+                      .style('background-color', "white");
+                    d3.select(this)
+                      var node_type = -1;
+                      switch(d.row) {  
+                        case "# Nodes":
+                            node_type = 0; 
+                            break;                       
+                        case "# Customers": 
+                            node_type = CONSUMER; 
+                            break;
+                        case "# Sources":
+                            node_type = SOURCE; 
+                            break;
+                        case "# Tanks":
+                            node_type = TANK; 
+                            break;                     
+                      }
+
+                      var edge_type = -1;
+                      switch(d.row) {  
+                        case "# Edges":
+                            edge_type = 0; 
+                            break;                       
+                        case "# Pumps": 
+                            edge_type = PUMP; 
+                            break;
+                        case "# Valves":
+                            edge_type = VALVE; 
+                            break;                                         
+                      }    
+
+                      if (node_type > 0) {
+                        d3.select("#graph-canvas").selectAll("circle")
+                        .filter(function(d) {
+                            return d.node_type == node_type;
+                        })
+                        .moveToFront()
+                        .attr("r", 4);
+                      } else if (node_type == 0){
+                        d3.select("#graph-canvas").selectAll("circle")                        
+                        .moveToFront()
+                        .attr("r", 4);
+                      }
+
+                      if (edge_type > 0) {
+                        d3.select("#graph-canvas").selectAll("line")
+                        .filter(function(d) {
+                            return d.edge_type == edge_type;
+                        })                        
+                        .attr("stroke", "steelblue");
+                                  
+                      } else if (edge_type == 0){
+                        d3.select("#graph-canvas").selectAll("line")                                                
+                        .attr("stroke", "steelblue");
+                      }
+                      
+                });
+
+    rows.append('th').text(function(d) { return d.row;});
+    rows.append('td')
+    .style("text-align", "center")
+    .text(function(d) { return d.value;});
+}
 
 function create_dynamic_table(label_identifier, data, columns, header) {
     d3.select(label_identifier).selectAll('table').remove()
