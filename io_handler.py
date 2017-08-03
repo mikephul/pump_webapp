@@ -324,6 +324,16 @@ def load_var(network, filename):
         output = None
     return output
 
+def remove_var(network, filename):
+    network_var_dir = get_var_dir(network)
+    path = os.path.join(network_var_dir, filename)
+    path += '.npy'
+    output = True
+    try:    
+        os.remove(path)
+    except:
+        output = False
+    return output
 
 def get_var_dir(network):
     network_var_dir = str(network.id) + '_' + network.name

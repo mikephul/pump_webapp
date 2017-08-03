@@ -9,6 +9,15 @@ $(window).load(function() {
     w3.includeHTML();
 });
 
+window.onbeforeunload = closingCode;
+function closingCode(){
+    var url_reset = "/api/reset/" + state;
+    d3.json(url_reset, function() {
+        console.log('RESETTTTTTTTTTTT')     
+    })
+   return null;
+}
+
 var linspace = function(start, stop, nsteps){
     delta = (stop-start)/(nsteps-1)
     return d3.range(nsteps).map(function(i){return start+i*delta;});
@@ -549,7 +558,14 @@ function createVerticleTable(label_identifier, data, rows, header) {
                         .moveToFront()
                         .attr("r", 8);
                       } else if (node_type == 0){
-                        d3.select("#graph-canvas").selectAll("circle")                        
+                        d3.select("#graph-canvas").selectAll("circle")
+                        .filter(function(d) {
+                            var first = d.node_type == JUNCTION;
+                            var second = d.node_type == CONSUMER;
+                            var third = d.node_type == SOURCE;
+                            var fourth = d.node_type == TANK;
+                            return first || second || third || fourth;
+                        })                        
                         .moveToFront()
                         .attr("r", 8);
                       }
@@ -608,7 +624,14 @@ function createVerticleTable(label_identifier, data, rows, header) {
                         .moveToFront()
                         .attr("r", 4);
                       } else if (node_type == 0){
-                        d3.select("#graph-canvas").selectAll("circle")                        
+                        d3.select("#graph-canvas").selectAll("circle")
+                        .filter(function(d) {
+                            var first = d.node_type == JUNCTION;
+                            var second = d.node_type == CONSUMER;
+                            var third = d.node_type == SOURCE;
+                            var fourth = d.node_type == TANK;
+                            return first || second || third || fourth;
+                        }) 
                         .moveToFront()
                         .attr("r", 4);
                       }

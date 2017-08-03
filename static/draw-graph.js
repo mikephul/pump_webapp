@@ -219,7 +219,7 @@ function render(error, node_info, edge_info, summary) {
             demand: +d.demand,
             head: +d.head,
             node_type: +d.node_type,
-            pressure: +d.head,
+            pressure: +d.pressure,
             x: +d.x,
             y: +d.y
         };
@@ -234,7 +234,7 @@ function render(error, node_info, edge_info, summary) {
             diameter: +d.diameter,
             roughness: +d.roughness,
             edge_type: +d.edge_type,
-            flow: 0.00
+            flow: +d.flow
         };
     })
 
@@ -242,14 +242,19 @@ function render(error, node_info, edge_info, summary) {
 }
 
 function initialize(name) {
+    console.log("INITIALIZEE")
     state = name;
+    
+    nodes = [];
+    edges = [];
     d3.select("#graph-canvas").selectAll("*").remove();
     var url_nodes = "/api/nodes/" + state;
-    var url_edges = "/api/edges/" + state;		    
+    var url_edges = "/api/edges/" + state;          
     d3.queue()
         .defer(d3.json, url_nodes)
-        .defer(d3.json, url_edges)		        
+        .defer(d3.json, url_edges)              
         .await(render);
+    
 }
 
 function getNewDirection() {
@@ -318,19 +323,19 @@ function update(error, info) {
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == JUNCTION;
         })
-        .transition().duration(500)
+        .transition().duration(300)
         .attr("r", 6)
-        .transition().duration(1000)
+        .transition().duration(400)
         .attr("fill", function(d) {
             return pressureScale(d.pressure);
         })        
-        .transition().duration(500)
+        .transition().duration(300)
         .attr("r", 4);
 
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == CONSUMER;
         })
-        .transition().duration(2000)
+        .transition().duration(1000)
         .attr("fill", function(d) {
             if (d.d_satisfy && d.h_satisfy) {
                 return "#F6416C";
@@ -338,7 +343,6 @@ function update(error, info) {
             return "white"
         });
 
-    // updateTable();
 }
 
 function update_node(error, info) {
