@@ -711,3 +711,6 @@ function create_dynamic_table(label_identifier, data, columns, header) {
         .text("junction");
 
 }
+
+
+
