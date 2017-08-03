@@ -1,69 +1,24 @@
-$(window).load(function() {
-    initialize(state);
-    getSummary();
-    if (loop) {
-        flowLoop = setInterval(function() {
-            showDirection();
-        }, 2000);
-    }
-    w3.includeHTML();
-});
 
-var linspace = function(start, stop, nsteps){
-    delta = (stop-start)/(nsteps-1)
-    return d3.range(nsteps).map(function(i){return start+i*delta;});
-}
 
-function updateTable() {
-    getCustomers();
-    getSources();
-    getValves();
-    getKeyNodes();
-    getKeyEdges();
-}
-
-function loopAnimation() {
-    loop = !loop;
-    if (loop) {
-        $("#direction-button")
-            .attr('class', 'btn btn-danger')
-            .attr('value', 'Pause');
-        flowLoop = setInterval(function() {
-            showDirection();
-        }, 2000);
-    } else {
-        $("#direction-button")
-            .attr('class', 'btn btn-default')
-            .attr('value', 'Play');
-        clearInterval(flowLoop)
-    }
-}
-
+// ========== Summary ========== //
 function getSummary() {
     var url = "/api/summary_table/" + state;
     d3.json(url, writeSummaryTable);
 }
 
-function getCustomers() {
-    var url_customers = "/api/customers_table/" + state;
-    d3.json(url_customers, writeCustomersTable);
+function writeSummaryTable(summary) {
+    d3.select("#dynamic-table-summary").selectAll("*").remove()
+    d3.select("#summary-canvas").selectAll("*").remove()
+    d3.select("#summary-canvas").attr("height", 0);
+    var rows = ["name", "num_node", "num_edge", "num_customer", "num_source", "num_tank", "num_pump", "num_valve"]
+    var header = ["Name", "# Nodes", "# Edges", "# Customers", "# Sources", "# Tanks", "# Pumps", "# Valves"]
+    createVerticleTable("#dynamic-table-summary", summary, rows, header);
 }
 
-function getSources() {
-    var url_sources = "/api/sources_table/" + state;
-    d3.json(url_sources, writeSourcesTable);
-}
-
-function getValves() {
-    var url_valves = "/api/valves_table/" + state;
-    d3.json(url_valves, writeValvesTable);
-}
-
-// ======= SOURCE ====== //
+// ========== Source ========== //
 function getSourcesDynamic() {
     var url_sources = "/api/sources_table/" + state;
     d3.json(url_sources, writeSourcesDynamic);
-
 }
 
 function writeSourcesDynamic(nodes) {
@@ -78,7 +33,7 @@ function writeSourcesDynamic(nodes) {
     create_dynamic_table('#dynamic_table_node', json_data, column, header);
 }
 
-// ======= CUSTOMER ====== //
+// ========== Customer ========== //
 function getCustomersDynamic() {
     var url_customers = "/api/customers_table/" + state;
     d3.json(url_customers, writeCustomersDynamic);
@@ -96,8 +51,7 @@ function writeCustomersDynamic(nodes) {
     create_dynamic_table('#dynamic_table_node', json_data, column, header);
 }
 
-
-// ======= NODES ====== //
+// ========== Nodes ========== //
 function getNodesDynamic() {
     var url_customers = "/api/nodes/" + state;
     d3.json(url_customers, writeNodesDynamic);
@@ -130,11 +84,10 @@ function writeNodesDynamic(nodes) {
     create_dynamic_table('#dynamic_table_node', json_data, column, header);
 }
 
-// ====== VALVES ====== //
+// ========== Valves ========== //
 function getValvesDynamic() {
     var url_valves = "/api/valves_table/" + state;
     d3.json(url_valves, writeValvesDynamic);
-
 }
 
 function writeValvesDynamic(edges) {
@@ -144,8 +97,26 @@ function writeValvesDynamic(edges) {
     create_dynamic_table('#dynamic_table_edge', json_data, column, header);
 }
 
-// ====== EDGES ====== //
+function writePumpsDynamic(edges) {
+    json_data = edges.json_list;
+    for (i = 0; i < json_data.length; i++) {
+        json_data[i].flow = parseFloat(json_data[i].flow).toFixed(2)
+        json_data[i].gap = parseFloat(json_data[i].gap).toFixed(2)
+    }
 
+    var dh_max = pump_data.coeff[1]
+    var gamma = pump_data.coeff[0]
+    var xMax = parseFloat(json_data[0].flow) / 1000
+    var q = linspace(0, xMax, 20)
+    var dh = q.map(function(i) { return dh_max + gamma * Math.pow(i, 2) })
+    plot_area("#pump-curve-canvas", pump_data.x, pump_data.y, q, dh, "Pressure")
+
+    var column = ['edge_id', 'edge_type', 'head_id', 'tail_id', 'flow', 'gap']
+    var header = ['ID', 'Type', 'Head ID', 'TAIL ID', 'Flow', 'Gap'];
+    create_dynamic_table('#dynamic_table_pump', json_data, column, header);
+}
+
+// ========== Edges ========== //
 function getEdgesDynamic() {
     var url_customers = "/api/edges/" + state;
     d3.json(url_customers, writeEdgesDynamic);
@@ -167,37 +138,6 @@ function get_specified_edge_dynamic() {
     d3.json(url_specified_edge, writeEdgesDynamic);
 }
 
-function get_pump_curve() {
-	var pump_id = document.getElementById('search_pump_id').value
-	var url = "/api/pumps/" + state + "/" + pump_id
-	d3.json(url, function(pump) {
-        d3.select("#pump-curve-canvas").selectAll("*").remove();
-        pump_data = pump.json_list[0]
-        // get edge information
-        var url_specified_edge = "/api/edges/" + state + "/" + pump_data.edge_id;
-        d3.json(url_specified_edge, writePumpsDynamic);
-    });
-}
-
-function writePumpsDynamic(edges) {
-    json_data = edges.json_list;
-    for (i = 0; i < json_data.length; i++) {
-        json_data[i].flow = parseFloat(json_data[i].flow).toFixed(2)
-        json_data[i].gap = parseFloat(json_data[i].gap).toFixed(2)
-    }
-    
-    var dh_max = pump_data.coeff[1]
-    var gamma = pump_data.coeff[0]
-    var xMax = parseFloat(json_data[0].flow)/1000
-    var q = linspace(0, xMax, 20)
-    var dh = q.map(function(i){return dh_max + gamma*Math.pow(i,2)})
-    plot_area("#pump-curve-canvas", pump_data.x, pump_data.y, q, dh, "Pressure")
-
-    var column = ['edge_id', 'edge_type', 'head_id', 'tail_id', 'flow', 'gap']
-    var header = ['ID', 'Type', 'Head ID', 'TAIL ID', 'Flow', 'Gap'];
-    create_dynamic_table('#dynamic_table_pump', json_data, column, header);
-}
-
 function writeEdgesDynamic(edges) {
     json_data = edges.json_list;
     for (i = 0; i < json_data.length; i++) {
@@ -209,428 +149,173 @@ function writeEdgesDynamic(edges) {
     create_dynamic_table('#dynamic_table_edge', json_data, column, header);
 }
 
-
-function getKeyNodes() {
-    document.getElementById("top-five-flow").click();
-}
-
-function getKeyEdges() {
-    document.getElementById("top-five-pressure").click();
-}
-
-function get_top_five_highest_pressure_nodes() {
-    var url_top_five_pressure_nodes = "/api/five_highest_pressure/" + state;
-    d3.json(url_top_five_pressure_nodes, writeTopFivePressureTable);
-
-}
-
-function get_top_five_lowest_pressure_nodes() {
-    var url_top_five_pressure_nodes = "/api/five_lowest_pressure/" + state;
-    d3.json(url_top_five_pressure_nodes, writeTopFivePressureTable);
-
-}
-
-function get_top_five_highest_flow_edges() {
-    var url_top_five_flow_edges = "/api/five_highest_flow/" + state;
-    d3.json(url_top_five_flow_edges, writeTopFiveFlowTable);
-
-}
-
-function get_top_five_lowest_flow_edges() {
-    var url_top_five_flow_edges = "/api/five_lowest_flow/" + state;
-    d3.json(url_top_five_flow_edges, writeTopFiveFlowTable);
-
-}
-
-function get_specified_node() {
-    var node_id = document.getElementById('search_node_id').value
-    var url_specified_node = "/api/nodes/" + state + "/" + node_id;
-    d3.json(url_specified_node, writeTopFivePressureTable);
+// ========== Pump ========== //
+function get_pump_curve() {
+    var pump_id = document.getElementById('search_pump_id').value
+    var url = "/api/pumps/" + state + "/" + pump_id
+    d3.json(url, function(pump) {
+        d3.select("#pump-curve-canvas").selectAll("*").remove();
+        pump_data = pump.json_list[0]
+        // get edge information
+        var url_specified_edge = "/api/edges/" + state + "/" + pump_data.edge_id;
+        d3.json(url_specified_edge, writePumpsDynamic);
+    });
 }
 
 
-function get_specified_edge() {
-    var edge_id = document.getElementById('search_edge_id').value
-    var url_specified_edge = "/api/edges/" + state + "/" + edge_id;
-    d3.json(url_specified_edge, writeTopFiveFlowTable);
-}
-
-function writeSummaryTable(summary) {    
-    d3.select("#dynamic-table-summary").selectAll("*").remove()
-    d3.select("#summary-canvas").selectAll("*").remove()   
-    d3.select("#summary-canvas").attr("height", 0);
-    var rows = ["name", "num_node", "num_edge", "num_customer", "num_source", "num_tank", "num_pump", "num_valve"]
-    var header = ["Name", "# Nodes", "# Edges", "# Customers", "# Sources", "# Tanks", "# Pumps", "# Valves"]
-    createVerticleTable("#dynamic-table-summary", summary, rows, header);
-}
-
-function writeCustomersTable(nodes) {
-    var customers_nodes_list = nodes.json_list;
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#customers-name" + i).text("");
-        d3.select("#customers-id" + i).text("");
-        d3.select("#customers-demand" + i).text("");
-        d3.select("#customers-flow_in" + i).text("");
-        d3.select("#customers-flow_satisfied" + i).selectAll("span").remove();
-        d3.select("#customers-pressure" + i).text("");
-        d3.select("#customers-min_pressure" + i).text("");
-        d3.select("#customers-pressure_satisfied" + i).selectAll("span").remove();
-    }
-
-    for (i = 1; i <= customers_nodes_list.length; i++) {
-        d3.select("#customers-name" + i).text(customers_nodes_list[i - 1].name);
-        d3.select("#customers-id" + i).text(customers_nodes_list[i - 1].node_id);
-        d3.select("#customers-demand" + i).text(customers_nodes_list[i - 1].demand);
-        d3.select("#customers-flow_in" + i).text(parseFloat(customers_nodes_list[i - 1].flow_in).toFixed(2));
-
-        if (customers_nodes_list[i - 1].flow_satisfied) {
-            d3.select("#customers-flow_satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ok")
-                .attr("style", "color:#5cb85c");
-        } else {
-            d3.select("#customers-flow_satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-remove")
-                .attr("style", "color:#d9534f");
-        }
-
-        d3.select("#customers-pressure" + i).text(parseFloat(customers_nodes_list[i - 1].pressure).toFixed(2));
-        d3.select("#customers-min_pressure" + i).text(customers_nodes_list[i - 1].min_pressure);
-
-        if (customers_nodes_list[i - 1].pressure_satisfied) {
-            d3.select("#customers-pressure_satisfied" + i)
-                .append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ok")
-                .attr("style", "color:#5cb85c");
-        } else {
-            d3.select("#customers-pressure_satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-remove")
-                .attr("style", "color:#d9534f");
-        }
-    }
-}
-
-
-function writeSourcesTable(nodes) {
-    var sources_nodes_list = nodes.json_list;
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#sources-id" + i).text("");
-        d3.select("#sources-flow_out" + i).text("");
-        d3.select("#sources-pressure" + i).text("");
-        d3.select("#sources-min_pressure" + i).text("");
-        d3.select("#sources-pressure_satisfied" + i).selectAll("span").remove();
-    }
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#sources-id" + i).text(sources_nodes_list[i - 1].node_id);
-        d3.select("#sources-flow_out" + i).text(parseFloat(sources_nodes_list[i - 1].flow_out).toFixed(2));
-        d3.select("#sources-pressure" + i).text(parseFloat(sources_nodes_list[i - 1].pressure).toFixed(2));
-        d3.select("#sources-min_pressure" + i).text(sources_nodes_list[i - 1].min_pressure);
-
-        if (sources_nodes_list[i - 1].pressure >= sources_nodes_list[i - 1].min_pressure) {
-            d3.select("#sources-pressure_satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ok")
-                .attr("style", "color:#5cb85c");
-        } else {
-            d3.select("#sources-pressure_satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-remove")
-                .attr("style", "color:#d9534f");
-        }
-    }
-}
-
-function writeValvesTable(valves) {
-    var valves_edges_list = valves.json_list;
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#valves-edge_id" + i).text("");
-        d3.select("#valves-head_id" + i).text("");
-        d3.select("#valves-tail_id" + i).text("");
-        d3.select("#valves-valve_flow" + i).text("");
-        d3.select("#valves-valve_status" + i).selectAll("span").remove();
-    }
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#valves-edge_id" + i).text(valves_edges_list[i - 1].edge_id);
-        d3.select("#valves-head_id" + i).text(valves_edges_list[i - 1].head_id);
-        d3.select("#valves-tail_id" + i).text(valves_edges_list[i - 1].tail_id);
-        d3.select("#valves-valve_flow" + i).text(parseFloat(valves_edges_list[i - 1].valve_flow).toFixed(2));
-
-        if (valves_edges_list[0].valve_status) {
-            d3.select("#valves-valve_status" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ok-circle")
-                .attr("style", "color:#5cb85c");
-        } else {
-            d3.select("#valves-valve_status" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ban-circle")
-                .attr("style", "color:#d9534f");
-        }
-    }
-}
-
-
-function writeTopFivePressureTable(nodes) {
-    var top_five_pressure_nodes_list = nodes.json_list;
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#top_five_pressure-id" + i).text("");
-        d3.select("#top_five_pressure-min_pressure" + i).text("");
-        d3.select("#top_five_pressure-pressure" + i).text("");
-        d3.select("#top_five_pressure-type" + i).selectAll("span").remove();
-        d3.select("#top_five_pressure-satisfied" + i).selectAll("span").remove();
-    }
-
-    for (i = 1; i <= top_five_pressure_nodes_list.length; i++) {
-        d3.select("#top_five_pressure-id" + i).text(top_five_pressure_nodes_list[i - 1].node_id);
-        d3.select("#top_five_pressure-min_pressure" + i).text(parseFloat(top_five_pressure_nodes_list[i - 1].head).toFixed(2));
-        d3.select("#top_five_pressure-pressure" + i).text(parseFloat(top_five_pressure_nodes_list[i - 1].pressure).toFixed(2));
-        var node_type = top_five_pressure_nodes_list[i - 1].node_type;
-        switch (node_type) {
-            case CONSUMER:
-                d3.select("#top_five_pressure-type" + i).append("xhtml:span")
-                    .attr("class", "label label-danger")
-                    .text("consumer");
-                break;
-            case SOURCE:
-                d3.select("#top_five_pressure-type" + i).append("xhtml:span")
-                    .attr("class", "label label-warning")
-                    .text("source");
-                break;
-            case TANK:
-                d3.select("#top_five_pressure-type" + i).append("xhtml:span")
-                    .attr("class", "label label-success")
-                    .text("tank");
-                break;
-            default:
-                d3.select("#top_five_pressure-type" + i).append("xhtml:span")
-                    .attr("class", "label label-primary")
-                    .text("junction");
-        }
-        d3.select("#top_five_pressure-type" + i).text();
-        if (top_five_pressure_nodes_list[i - 1].pressure >= top_five_pressure_nodes_list[i - 1].head) {
-            d3.select("#top_five_pressure-satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-ok")
-                .attr("style", "color:#5cb85c");
-        } else {
-            d3.select("#top_five_pressure-satisfied" + i).append("xhtml:span")
-                .attr("class", "control glyphicon glyphicon-remove")
-                .attr("style", "color:#d9534f");
-        }
-    }
-}
-
-
-function writeTopFiveFlowTable(edges) {
-    var top_five_flow_edges_list = edges.json_list;
-
-    for (i = 1; i <= 5; i++) {
-        d3.select("#top_five_flow-edge_id" + i).text("");
-        d3.select("#top_five_flow-head_id" + i).text("");
-        d3.select("#top_five_flow-tail_id" + i).text("");
-        d3.select("#top_five_flow-flow" + i).text("");
-        d3.select("#top_five_flow-type" + i).selectAll("span").remove();
-        d3.select("#top_five_flow-gap" + i).text("");
-        // d3.select("#top_five_pressure-satisfied" + i).selectAll("span").remove();
-    }
-
-    for (i = 1; i <= top_five_flow_edges_list.length; i++) {
-        d3.select("#top_five_flow-edge_id" + i)
-            .text(top_five_flow_edges_list[i - 1].edge_id)
-            .on("mouseover", function(d) {
-                d3.select(this)
-                    .style('background-color', "red");
-
-                var thisID = d3.select(this).text()
-
-                d3.select("#graph-canvas").selectAll("line")
-                    .filter(function(d) {
-                        return d.edge_id == parseInt(thisID);
-                    })
-                    .attr("stroke-width", 100)
-                    .attr("stroke", "red");
-            })
-            .on("mouseout", function(d) {
-                d3.select(this)
-                    .style('background-color', "white");
-                var thisID = d3.select(this).text()
-
-                d3.select("#graph-canvas").selectAll("line")
-                    .filter(function(d) {
-                        return d.edge_id == parseInt(thisID);
-                    })
-                    .attr("stroke-width", 4)
-                    .attr("stroke", "steelblue");
-            });
-        d3.select("#top_five_flow-head_id" + i).text(top_five_flow_edges_list[i - 1].head_id);
-        d3.select("#top_five_flow-tail_id" + i).text(top_five_flow_edges_list[i - 1].tail_id);
-        d3.select("#top_five_flow-flow" + i).text(parseFloat(top_five_flow_edges_list[i - 1].flow).toFixed(2));
-        d3.select("#top_five_flow-gap" + i).text(parseFloat(top_five_flow_edges_list[i - 1].gap).toFixed(2));
-
-
-        var edge_type = top_five_flow_edges_list[i - 1].edge_type;
-        switch (edge_type) {
-            case PUMP:
-                d3.select("#top_five_flow-type" + i).append("xhtml:span")
-                    .attr("class", "label label-warning")
-                    .text("pump");
-                break;
-            case VALVE:
-                d3.select("#top_five_flow-type" + i).append("xhtml:span")
-                    .attr("class", "label label-success")
-                    .text("valve");
-                break;
-            default:
-                d3.select("#top_five_flow-type" + i).append("xhtml:span")
-                    .attr("class", "label label-primary")
-                    .text("pipe");
-        }
-    }
-
-}
-
-function print_test() {
-    console.log("testtest");
-}
-
-function createVerticleTable(label_identifier, data, rows, header) {    
+// ========== Dynamic Table ========== //
+function createVerticleTable(label_identifier, data, rows, header) {
     d3.select(label_identifier).selectAll('table').remove()
     var table = d3.select(label_identifier).append('table')
         .style("width", "100%")
-        .attr("class", "table");        
-    
+        .attr("class", "table");
+
     var zip = rows.map(function(d, i) {
-        return {"row": header[i], "value": data[d]}        
+        return { "row": header[i], "value": data[d] }
     })
 
     var tbody = table.append('tbody')
     var rows = tbody.selectAll('tr')
-                .data(zip)
-                .enter()
-                .append('tr')
-                .on("mouseover", function(d) {
-                    d3.select(this)
-                      .style('background-color', "#F9F2F4");
+        .data(zip)
+        .enter()
+        .append('tr')
+        .on("mouseover", function(d) {
+            d3.select(this)
+                .style('background-color', "#F9F2F4");
 
-                      var node_type = -1;
-                      switch(d.row) {  
-                        case "# Nodes":
-                            node_type = 0; 
-                            break;                       
-                        case "# Customers": 
-                            node_type = CONSUMER; 
-                            break;
-                        case "# Sources":
-                            node_type = SOURCE; 
-                            break;
-                        case "# Tanks":
-                            node_type = TANK; 
-                            break;                     
-                      }
+            var node_type = -1;
+            switch (d.row) {
+                case "# Nodes":
+                    node_type = 0;
+                    break;
+                case "# Customers":
+                    node_type = CONSUMER;
+                    break;
+                case "# Sources":
+                    node_type = SOURCE;
+                    break;
+                case "# Tanks":
+                    node_type = TANK;
+                    break;
+            }
 
-                      var edge_type = -1;
-                      switch(d.row) {  
-                        case "# Edges":
-                            edge_type = 0; 
-                            break;                       
-                        case "# Pumps": 
-                            edge_type = PUMP; 
-                            break;
-                        case "# Valves":
-                            edge_type = VALVE; 
-                            break;                                         
-                      }    
+            var edge_type = -1;
+            switch (d.row) {
+                case "# Edges":
+                    edge_type = 0;
+                    break;
+                case "# Pumps":
+                    edge_type = PUMP;
+                    break;
+                case "# Valves":
+                    edge_type = VALVE;
+                    break;
+            }
 
-                      if (node_type > 0) {
-                        d3.select("#graph-canvas").selectAll("circle")
-                        .filter(function(d) {
-                            return d.node_type == node_type;
-                        })
-                        .moveToFront()
-                        .attr("r", 8);
-                      } else if (node_type == 0){
-                        d3.select("#graph-canvas").selectAll("circle")                        
-                        .moveToFront()
-                        .attr("r", 8);
-                      }
+            if (node_type > 0) {
+                d3.select("#graph-canvas").selectAll("circle")
+                    .filter(function(d) {
+                        return d.node_type == node_type;
+                    })
+                    .moveToFront()
+                    .attr("r", 6);
+            } else if (node_type == 0) {
+                d3.select("#graph-canvas").selectAll("circle")
+                    .filter(function(d) {
+                        var first = d.node_type == JUNCTION;
+                        var second = d.node_type == CONSUMER;
+                        var third = d.node_type == SOURCE;
+                        var fourth = d.node_type == TANK;
+                        return first || second || third || fourth;
+                    })
+                    .moveToFront()
+                    .attr("r", 6);
+            }
 
-                      if (edge_type > 0) {
-                        d3.select("#graph-canvas").selectAll("line")
-                        .filter(function(d) {
-                            return d.edge_type == edge_type;
-                        })                        
-                        .attr("stroke", "red");
-                                  
-                      } else if (edge_type == 0){
-                        d3.select("#graph-canvas").selectAll("line")                                                
-                        .attr("stroke", "red");
-                      }
-                      
-                })
-                .on("mouseout", function(d) {
-                    d3.select(this)
-                      .style('background-color', "white");
-                    d3.select(this)
-                      var node_type = -1;
-                      switch(d.row) {  
-                        case "# Nodes":
-                            node_type = 0; 
-                            break;                       
-                        case "# Customers": 
-                            node_type = CONSUMER; 
-                            break;
-                        case "# Sources":
-                            node_type = SOURCE; 
-                            break;
-                        case "# Tanks":
-                            node_type = TANK; 
-                            break;                     
-                      }
+            if (edge_type > 0) {
+                d3.select("#graph-canvas").selectAll("line")
+                    .filter(function(d) {
+                        return d.edge_type == edge_type;
+                    })
+                    .attr("stroke", "red");
 
-                      var edge_type = -1;
-                      switch(d.row) {  
-                        case "# Edges":
-                            edge_type = 0; 
-                            break;                       
-                        case "# Pumps": 
-                            edge_type = PUMP; 
-                            break;
-                        case "# Valves":
-                            edge_type = VALVE; 
-                            break;                                         
-                      }    
+            } else if (edge_type == 0) {
+                d3.select("#graph-canvas").selectAll("line")
+                    .attr("stroke", "red");
+            }
 
-                      if (node_type > 0) {
-                        d3.select("#graph-canvas").selectAll("circle")
-                        .filter(function(d) {
-                            return d.node_type == node_type;
-                        })
-                        .moveToFront()
-                        .attr("r", 4);
-                      } else if (node_type == 0){
-                        d3.select("#graph-canvas").selectAll("circle")                        
-                        .moveToFront()
-                        .attr("r", 4);
-                      }
+        })
+        .on("mouseout", function(d) {
+            d3.select(this)
+                .style('background-color', "white");
+            d3.select(this)
+            var node_type = -1;
+            switch (d.row) {
+                case "# Nodes":
+                    node_type = 0;
+                    break;
+                case "# Customers":
+                    node_type = CONSUMER;
+                    break;
+                case "# Sources":
+                    node_type = SOURCE;
+                    break;
+                case "# Tanks":
+                    node_type = TANK;
+                    break;
+            }
 
-                      if (edge_type > 0) {
-                        d3.select("#graph-canvas").selectAll("line")
-                        .filter(function(d) {
-                            return d.edge_type == edge_type;
-                        })                        
-                        .attr("stroke", "steelblue");
-                                  
-                      } else if (edge_type == 0){
-                        d3.select("#graph-canvas").selectAll("line")                                                
-                        .attr("stroke", "steelblue");
-                      }
-                      
-                });
+            var edge_type = -1;
+            switch (d.row) {
+                case "# Edges":
+                    edge_type = 0;
+                    break;
+                case "# Pumps":
+                    edge_type = PUMP;
+                    break;
+                case "# Valves":
+                    edge_type = VALVE;
+                    break;
+            }
 
-    rows.append('th').text(function(d) { return d.row;});
+            if (node_type > 0) {
+                d3.select("#graph-canvas").selectAll("circle")
+                    .filter(function(d) {
+                        return d.node_type == node_type;
+                    })
+                    .moveToFront()
+                    .attr("r", 4);
+            } else if (node_type == 0) {
+                d3.select("#graph-canvas").selectAll("circle")
+                    .filter(function(d) {
+                        var first = d.node_type == JUNCTION;
+                        var second = d.node_type == CONSUMER;
+                        var third = d.node_type == SOURCE;
+                        var fourth = d.node_type == TANK;
+                        return first || second || third || fourth;
+                    })
+                    .moveToFront()
+                    .attr("r", 4);
+            }
+
+            if (edge_type > 0) {
+                d3.select("#graph-canvas").selectAll("line")
+                    .filter(function(d) {
+                        return d.edge_type == edge_type;
+                    })
+                    .attr("stroke", "steelblue");
+
+            } else if (edge_type == 0) {
+                d3.select("#graph-canvas").selectAll("line")
+                    .attr("stroke", "steelblue");
+            }
+
+        });
+
+    rows.append('th').text(function(d) { return d.row; });
     rows.append('td')
-    .style("text-align", "center")
-    .text(function(d) { return d.value;});
+        .style("text-align", "center")
+        .text(function(d) { return d.value; });
 }
 
 function create_dynamic_table(label_identifier, data, columns, header) {
@@ -758,7 +443,7 @@ function create_dynamic_table(label_identifier, data, columns, header) {
         .style("padding-top", 15)
         .style("padding-left", 2)
         .style("text-align", "center")
-        .text(function(d) {            
+        .text(function(d) {
             return d.value;
         });
 
@@ -845,5 +530,4 @@ function create_dynamic_table(label_identifier, data, columns, header) {
         .append("xhtml:span")
         .attr("class", "label label-primary")
         .text("junction");
-
 }

@@ -16,7 +16,7 @@ def predirection(A, L, d):
     constraints = [AA*q <= d, q >= 0]
 
     prob = Problem(obj, constraints)
-    prob.solve(verbose=True, solver=MOSEK)
+    prob.solve(verbose=True, solver=CVXOPT, abstol=1e-1, reltol=1e-1)
 
     # Flip a according to the solution
     flip = []
@@ -36,7 +36,7 @@ def solve_imaginary_flow(A, L1, dh_max, d):
 
     obj = Minimize(L1.T*q**3-q.T*dh_max)
     prob = Problem(obj, constraints)
-    prob.solve(verbose=True, solver=MOSEK)
+    prob.solve(verbose=True, solver=CVXOPT)
 
     return obj.value, q.value
 
@@ -52,7 +52,7 @@ def solve_imaginary_pressure(A, L1, dh_max, hc, pump_head_list, qq):
     obj = Minimize(norm(A.T*h-np.diag(L1.A1)*np.power(qq, 2)+dh_max))
 
     prob = Problem(obj, constraints)
-    prob.solve(verbose=True, solver=MOSEK)
+    prob.solve(verbose=True, solver=CVXOPT)
 
     hh = h.value
     gap_edge = A.T*hh-np.diag(L1.A1)*np.power(qq, 2)+dh_max
@@ -81,7 +81,7 @@ def solve_max_flow(A, L1, dh_max, d, hh):
     obj = Minimize(-sourceList.T*(A*q))
 
     prob = Problem(obj, constraints)
-    prob.solve(verbose=True, solver=MOSEK)
+    prob.solve(verbose=True, solver=CVXOPT)
 
     qq = q.value
     gap_edge = A.T*hh-np.diag(L1.A1)*np.power(qq, 2)+dh_max

@@ -1,12 +1,11 @@
 import os
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import PickleType
 
-from werkzeug import secure_filename
 import json
 import time
 import io
@@ -19,7 +18,7 @@ from io_handler import *
 from solve_handler import *
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_FOLDER = os.path.join(APP_ROOT, 'data')
+DATA_FOLDER = os.path.join('static/', 'data')
 
 app = Flask(__name__)
 CORS(app)
@@ -264,8 +263,9 @@ def create_folder(folder_name):
         os.makedirs(folder_name)
 
 
-def create_database():
+def create_database():    
     db.create_all()
+    print('==============================')
     create_folder(DATA_FOLDER)
     tic = time.clock()
     create_network('Small.inp')
@@ -280,7 +280,8 @@ def create_database():
     db.session.commit()
 
 # ==================== Initialize new database ====================
-shutil.rmtree(DATA_FOLDER)
+
+# shutil.rmtree(DATA_FOLDER)
 db.drop_all()
 create_database()
 
@@ -290,13 +291,41 @@ create_database()
 def index():
     return render_template("index.html")
 
+@app.route('/api/reset/<network_id>')
+def reset_network(network_id):
+    network = Network.query.filter_by(id=network_id).first()
+    edges = Edge.query.filter(Edge.network.has(id=network_id))
+    nodes = Node.query.filter(Node.network.has(id=network_id))
+
+    # Reset flow, pressure and gap in database
+    for node in nodes:
+        node.pressure = node.head
+
+    for edge in edges:
+        edge.flow = 0.0
+        edge.gap = 0.0
+
+    db.session.commit()
+
+    flip = load_var(network, 'flip')
+    if flip is not None:
+        for i in flip:
+            edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
+        db.session.commit()
+    
+    remove_var(network, 'flip')
+    remove_var(network, 'A')
+    remove_var(network, 'q')
+    remove_var(network, 'h')
+
+    return 'Success'
 
 # Solver routes
 @app.route('/api/predirection/<network_id>')
 def get_predirection(network_id):
     network = Network.query.filter_by(id=network_id).first()
     edges = Edge.query.filter(Edge.network.has(id=network_id))
-
+    
     A = load_var(network, 'A')
     
     if A is None:
@@ -310,6 +339,7 @@ def get_predirection(network_id):
 
         # Save to file
         save_var(network, 'A', A_pred)
+        save_var(network, 'flip', flip)
 
         # Filp the direction to make flow feasible
         for i in flip:
@@ -322,8 +352,8 @@ def get_predirection(network_id):
 @app.route('/api/imaginary/<network_id>')
 def get_imaginary_flow_and_pressure(network_id):
     network = Network.query.filter_by(id=network_id).first()
-    edges_data = Edge.query.all()
-    nodes_data = Node.query.all()
+    edges_data = Edge.query.filter(Edge.network.has(id=network_id))
+    nodes_data = Node.query.filter(Node.network.has(id=network_id))
 
     # Load variables
     A = load_var(network, 'A')
@@ -368,8 +398,8 @@ def get_imaginary_flow_and_pressure(network_id):
 def get_iterative(network_id, iter):
     iter = int(iter)
     network = Network.query.filter_by(id=network_id).first()
-    edges_data = Edge.query.all()
-    nodes_data = Node.query.all()
+    edges_data = Edge.query.filter(Edge.network.has(id=network_id))
+    nodes_data = Node.query.filter(Node.network.has(id=network_id))
 
     # Load variables
     A = load_var(network, 'A')
@@ -650,6 +680,9 @@ def get_five_lowest_flow_edes(network_id):
     five_lowest_flow_edges = Edge.query.filter(Edge.network.has(id=network_id)).order_by(Edge.flow.asc()).limit(5)
     return jsonify(json_list=[five_lowest_flow_edge.serialize for five_lowest_flow_edge in five_lowest_flow_edges])
 
+@app.route('/api/flip')
+def get_flip():    
+    return jsonify(joke)
 # @app.route('/api/pumps_table/<network_id>')
 # def get_pumps_table(network_id):
 #     pumps_edges = Pump.query.filter(Pump.network.has(id = network_id))

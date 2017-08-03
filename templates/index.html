@@ -4,6 +4,7 @@
     <title>Page Title</title>
     <style>
     /* set the CSS */
+
     .area path {
         fill: lightsteelblue !important;
         stroke-width: 0;
@@ -64,7 +65,7 @@
 
 <body>
     <!-- d3.js -->
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/d3-queue.v3.min.js"></script>
     <script src="https://d3js.org/d3-color.v1.min.js"></script>
     <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
@@ -72,7 +73,7 @@
     <!-- lodash -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
     <!-- jquery -->
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
     <!-- simple statistic -->
     <script src="{{ url_for('static', filename='arr-stat.js') }}"></script>
     <!-- tipsy -->
@@ -82,32 +83,73 @@
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
-    <!-- main -->
-    <link href="{{ url_for('static', filename='main.css') }}" rel="stylesheet" type="text/css" />
     <!-- scrolling nav -->
     <script src="{{ url_for('static', filename='scrolling-nav.js') }}"></script>
     <link href="{{ url_for('static', filename='scrolling-nav.css') }}" rel="stylesheet" type="text/css" />
+    <!-- jasny -->
     <script src="{{ url_for('static', filename='jasny-bootstrap.min.js') }}"></script>
     <link href="{{ url_for('static', filename='jasny-bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- font -->
     <link href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css" />
 
+    <!-- main -->
+    <link href="{{ url_for('static', filename='main.css') }}" rel="stylesheet" type="text/css" />
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    
+    <!-- plot -->
     <script src="{{ url_for('static', filename='plot.js') }}"></script>
+    <!-- write table -->
+    <script src="{{ url_for('static', filename='write-table.js') }}"></script>
+    <!-- draw graph -->
+    <script src="{{ url_for('static', filename='draw-graph.js') }}"></script>
 
-    <!-- include-html -->
-    <script src="https://www.w3schools.com/lib/w3.js"></script>
-    <div w3-include-html="{{ url_for('static', filename='navbar.html') }}"></div>
+    <!-- Navigation -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation" style="">
+        <div class="container">
+            <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target="#offCanvasMenu" data-canvas="body">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand page-scroll" href="#intro">Flow & Pressure</a>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden active">
+                        <a class="page-scroll" href="#page-top"></a>
+                    </li>
+                    <li class="">
+                        <a data-toggle="collapse" data-target="#collapseOne" href="#">Network</a>
+                    </li>
+                    <li class="">
+                        <a data-toggle="collapse" data-target="#collapseTwo" href="#">Node</a>
+                    </li>
+                    <li>
+                        <a data-toggle="collapse" data-target="#collapseThree" href="#">Edge</a>
+                    </li>
+                    <li>
+                        <a data-toggle="collapse" data-target="#collapseFour" href="#">Pump</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </div>
     <!-- Off Canvas Menu -->
     <nav id="offCanvasMenu" class="navmenu navmenu-default navmenu-fixed-right offcanvas" role="navigation" style="padding-left:-600">
         <a class="navmenu-brand" href="./index.html"><b>Flow and Pressure</b></a>
-        
-        <p style="padding-left:15; padding-right:15">To solve for the optimal energy flow and pressure of the network, use the buttons below the network: </br></br>
-            1. Predirection - Redirect the network to get the feasible minimum energy flow direction. </br></br>
-            2. Imaginary - Solve the convex relaxation problem to find minimum energy flow and pressure. </br></br>
-            3. Improve solution - Improve the existing constraint gap from the pre-solve method to achieve better accuracy. </br></br>
+        <p style="padding-left:15; padding-right:15">To solve for the optimal energy flow and pressure of the network, use the buttons below the network: </br>
+            </br>
+            1. Predirection - Redirect the network to get the feasible minimum energy flow direction. </br>
+            </br>
+            2. Imaginary - Solve the convex relaxation problem to find minimum energy flow and pressure. </br>
+            </br>
+            3. Improve solution - Improve the existing constraint gap from the pre-solve method to achieve better accuracy. </br>
+            </br>
             View the information of the water network using the panel on the left. Enjoy!
         </p>
-        
     </nav>
     <!-- Intro Section -->
     <section id="intro" class="intro-section">
@@ -122,54 +164,43 @@
                 <div class="col-xs-8">
                     <svg id="graph-canvas" width="750" height="500"></svg>
                     <div class="btn-group" style="padding-top:50px">
-                        <input name="small" type="button" class="btn btn-default" value="Small" onclick="initialize(1)">
+                        <!-- <input name="small" type="button" class="btn btn-default" value="Small" onclick="reset(1)"> -->
                         <input name="showdirection" id="direction-button" type="button" class="btn btn-danger" style="width: 70px !important;" value="Pause" onclick="loopAnimation()">
-                        <input name="predirection" type="button" data-toggle="tooltip" title="Find the lowest energy flow and correct the flow direction." class="btn btn-default " value="Predirection" onclick="getNewDirection()">
-                        <input id="imaginary-button" data-toggle="tooltip" title="After predirection, pre-solve the feasible network." style="border-radius: 0px 4px 4px 0px;" type="button" class="btn btn-default disabled" value="Imaginary" onclick="updateData()" />                            
-                        
+                        <input name="predirection" type="button" data-toggle="tooltip" title="Find the lowest energy flow and correct the flow direction." class="btn btn-default " value="Predirection" onclick="solvePredirection()">
+                        <input id="imaginary-button" data-toggle="tooltip" title="After predirection, pre-solve the feasible network." style="border-radius: 0px 4px 4px 0px;" type="button" class="btn btn-default disabled" value="Imaginary" onclick="solveImaginary()" />
                         <div class="input-group" style="width: 250; padding-left:20;">
                             <input id="iteration" type="text" class="form-control" placeholder="Iteration">
                             <span class="input-group-btn">
-								<button id="iteration-button" data-toggle="tooltip" title="Iteratively improve solution from the imaginary." class="btn btn-default disabled" type="button" onclick="updateData3()">Improve Solution</button>
-							</span>
+                                <button id="iteration-button" data-toggle="tooltip" title="Iteratively improve solution from the imaginary." class="btn btn-default disabled" type="button" onclick="solveIterative()">Improve Solution</button>
+                            </span>
                         </div>
-                        
-                    </div> 
-                    <div class="row"> 
                     </div>
-                    
                 </div>
-
-                
-
                 <div class="col-xs-4">
                     <div class="panel-group" id="accordion">
-
-                        <div class="panel panel-default" id="panel1">                            
+                        <div class="panel panel-default" id="panel1">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
-							        <a data-toggle="collapse" data-target="#collapseOne" 
-							           href="#" style="color: grey;">
-							          Network
-							        </a>
-      							</h4>
+                                    <a data-toggle="collapse" data-target="#collapseOne" 
+                                       href="#" style="color: grey;">
+                                      Network
+                                    </a>
+                                </h4>
                             </div>
-
                             <div id="collapseOne" class="panel-collapse collapse in">
                                 <div class="panel-body">
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="getSummary()">Overview
                                     </label>
-
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick = "plotPressureHist()">Pressure
+                                        <input type="radio" name="optradio" onclick="plotPressureHist()">Pressure
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick = "plotFlowHist()">Flow
+                                        <input type="radio" name="optradio" onclick="plotFlowHist()">Flow
                                     </label>
                                     </br>
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick = "plotGapHist()">Gap
+                                        <input type="radio" name="optradio" onclick="plotGapHist()">Gap
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="plotEnergyLossHist()">Energy Loss
@@ -178,8 +209,6 @@
                                         <input type="radio" name="optradio" onclick="plotEnergyPumpHist()">Pump Energy
                                     </label>
                                     <div id="dynamic-table-summary" style="padding-top: 20;"></div>
-                                                                                            
-
                                     <svg id="summary-canvas" height="0"></svg>
                                 </div>
                             </div>
@@ -187,14 +216,14 @@
                         <div class="panel panel-default" id="panel2">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
-							        <a data-toggle="collapse" data-target="#collapseTwo" 
-							           href="#" class="collapsed" style="color: grey;">
-							          Node
-							        </a>
-						        </h4>
+                                    <a data-toggle="collapse" data-target="#collapseTwo" 
+                                       href="#" class="collapsed" style="color: grey;">
+                                      Node
+                                    </a>
+                                </h4>
                             </div>
                             <div id="collapseTwo" class="panel-collapse collapse">
-                                <div class="panel-body">                                    
+                                <div class="panel-body">
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="getSourcesDynamic()">Sources
                                     </label>
@@ -206,12 +235,11 @@
                                     </label>
                                     </br>
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick = "getKeyNodesDynamicLowest()">Lowest Pressure
+                                        <input type="radio" name="optradio" onclick="getKeyNodesDynamicLowest()">Lowest Pressure
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick = "getKeyNodesDynamicHighest()">Highest Pressure
+                                        <input type="radio" name="optradio" onclick="getKeyNodesDynamicHighest()">Highest Pressure
                                     </label>
-
                                     <div class="input-group" style="padding-left:60; padding-right:60; padding-top:15; padding-bottom:15">
                                         <input id="search_dynamic_node_id" type="text" class="form-control" placeholder="Node id">
                                         <span class="input-group-btn">
@@ -225,11 +253,11 @@
                         <div class="panel panel-default" id="panel3">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
-						        <a data-toggle="collapse" data-target="#collapseThree"
-						           href="#" class="collapsed" style="color: grey;">
-						          Edge
-						        </a>
-						      </h4>
+                                <a data-toggle="collapse" data-target="#collapseThree"
+                                   href="#" class="collapsed" style="color: grey;">
+                                  Edge
+                                </a>
+                              </h4>
                             </div>
                             <div id="collapseThree" class="panel-collapse collapse">
                                 <div class="panel-body">
@@ -246,7 +274,6 @@
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="getKeyEdgesDynamicHighest()">Highest Flow
                                     </label>
-
                                     <div class="input-group" style="padding-left:60; padding-right:60; padding-top:15; padding-bottom:15">
                                         <input id="search_dynamic_edge_id" type="text" class="form-control" placeholder="Edge id">
                                         <span class="input-group-btn">
@@ -279,135 +306,16 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
-                    
-                </div>                        
+                </div>
             </div>
-        </div>               
+        </div>
     </section>
 
     <script>
-
-    var data = [1, 0];
-
-    var width = 400,
-        height = 400;
-
-    var outerRadius = height / 2 - 20,
-        innerRadius = outerRadius / 3,
-        cornerRadius = 10;
-
-    var pie = d3.layout.pie()
-        .padAngle(.02);
-
-    var arc = d3.svg.arc()
-        .padRadius(outerRadius)
-        .innerRadius(innerRadius);
-
-    var svg = d3.select("#pie-canvas")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("class", "pie")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-    svg.selectAll("path")
-        .data(pie(data))
-        .enter().append("path")
-        .each(function(d) { d.outerRadius = outerRadius - 20; })
-        .attr("d", arc)
-        .attr("fill", "#edbab8")
-
-        .on("mouseover", arcTween(outerRadius, 0))
-        .on("mouseout", arcTween(outerRadius - 20, 150));
-
-    function arcTween(outerRadius, delay) {
-        return function() {
-            d3.select(this).transition().delay(delay).attrTween("d", function(d) {
-                var i = d3.interpolate(d.outerRadius, outerRadius);
-                return function(t) { d.outerRadius = i(t); return arc(d); };
-            });
-        };
-    }
-
-    var state = 1;
-    var loop = true;
-    var flowLoop;
-
-    var energyHistory = [];
-    var gapHistory = [];
-    var pumpEnergyHistory = [];
-
-    plot_blank("#gap-canvas", "Gap");
-    plot_blank("#energy-canvas", "Energy");
-    plot_blank("#pump-energy-canvas", "Pump Energy");
-    // plot_blank("#pump-curve-canvas", "Pressure");
-
-    $(document).ready(function(){
-	    $('[data-toggle="tooltip"]').tooltip(); 
-	});
-
-    function plotPressureHist() {
-        d3.select("#dynamic-table-summary").selectAll("*").remove()
-        d3.select("#summary-canvas").selectAll("*").remove()
-        var pressure = nodes.map(function(d) { return d.pressure; });
-        histogram("#summary-canvas", pressure, "Pressure", pressureScale);
-    }
-
-    function plotFlowHist() {
-        d3.select("#dynamic-table-summary").selectAll("*").remove()
-        d3.select("#summary-canvas").selectAll("*").remove()
-        var flow = edges.map(function(d) { return d.flow; });
-        histogram("#summary-canvas", flow, "Flow");
-    }
-
-    function plotGapHist() {
-        d3.select("#dynamic-table-summary").selectAll("*").remove()
-        d3.select("#summary-canvas").selectAll("*").remove()        
-        plot_iter("#summary-canvas", gapHistory, "Gap");
-    }
-
-    function plotEnergyLossHist() {
-        d3.select("#dynamic-table-summary").selectAll("*").remove()
-        d3.select("#summary-canvas").selectAll("*").remove()        
-        plot_iter("#summary-canvas", energyHistory, "Energy Loss");
-    }
-
-    function plotEnergyPumpHist() {
-        d3.select("#dynamic-table-summary").selectAll("*").remove()
-        d3.select("#summary-canvas").selectAll("*").remove()        
-        plot_iter("#summary-canvas", pumpEnergyHistory, "Pump Energy");
-    }
-
-    function test(error, info) {
-        updateTable();
-        console.log(info);
-        d3.select("#gap-canvas").selectAll("*").remove();
-        d3.select("#energy-canvas").selectAll("*").remove();
-        d3.select("#pump-energy-canvas").selectAll("*").remove();
-        d3.select("#pressure-canvas").selectAll("*").remove();
-        d3.select("#flow-canvas").selectAll("*").remove();
-
-        energyHistory.push.apply(energyHistory, info.energy_loss);
-        gapHistory.push.apply(gapHistory, info.gap);
-        pumpEnergyHistory.push.apply(pumpEnergyHistory, info.energy_pump);
-
-        plot("#gap-canvas", d3.range(1, gapHistory.length + 1), gapHistory, "Gap");
-        plot("#energy-canvas", d3.range(1, energyHistory.length + 1), energyHistory, "Energy");
-        plot("#pump-energy-canvas", d3.range(1, pumpEnergyHistory.length + 1), pumpEnergyHistory, "Pump Energy");
-
-        var pressure = info.nodes.map(function(d) { return d.pressure; });
-        var flow = info.edges.map(function(d) { return d.flow; });
-        histogram("#pressure-canvas", pressure, "Pressure");
-        histogram("#flow-canvas", flow, "Flow");        
-
-    }
+    
     </script>
-
-    <script src="{{ url_for('static', filename='write-table.js') }}"></script>
-    <script src="{{ url_for('static', filename='draw-graph.js') }}"></script>
+    
 </body>
 
 </html>

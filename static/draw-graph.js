@@ -29,8 +29,7 @@ d3.selection.prototype.moveToBack = function() {
     });
 };
 
-// ============== Color ============== //
-
+// ========== Color ========== //
 function colorNodeType(d, color) {
     switch (d.node_type) {
         case CONSUMER:
@@ -56,7 +55,7 @@ function colorEdgeType(d) {
 }
 
 
-// ============== Scale ============== //
+// ========== Scale ========== //
 function getFlowScale() {
     var flows = edges.map(function(o) {
         return o.flow;
@@ -112,7 +111,7 @@ function getPositionScale() {
     };
 }
 
-// ============== Draw ============== //
+// ========== Draw ========== //
 function drawNodes(xScale, yScale, color) {
     d3.select("#graph-canvas").selectAll("circle")
         .data(nodes).enter().append("circle")
@@ -208,6 +207,8 @@ function drawGraph() {
     drawNodes(scale.x, scale.y, pressureScale);
 }
 
+
+// ========== Render & Update ========== //
 function render(error, node_info, edge_info, summary) {
     if (error) {
         console.log(error);
@@ -219,7 +220,7 @@ function render(error, node_info, edge_info, summary) {
             demand: +d.demand,
             head: +d.head,
             node_type: +d.node_type,
-            pressure: +d.head,
+            pressure: +d.pressure,
             x: +d.x,
             y: +d.y
         };
@@ -234,55 +235,11 @@ function render(error, node_info, edge_info, summary) {
             diameter: +d.diameter,
             roughness: +d.roughness,
             edge_type: +d.edge_type,
-            flow: 0.00
+            flow: +d.flow
         };
     })
 
     drawGraph();		    
-}
-
-function initialize(name) {
-    state = name;
-    d3.select("#graph-canvas").selectAll("*").remove();
-    var url_nodes = "/api/nodes/" + state;
-    var url_edges = "/api/edges/" + state;		    
-    d3.queue()
-        .defer(d3.json, url_nodes)
-        .defer(d3.json, url_edges)		        
-        .await(render);
-}
-
-function getNewDirection() {
-    var url_direction = "/api/predirection/" + state;
-    d3.json(url_direction, function(info) {        
-        edges = _.merge(edges, info.json_list); 
-        document.getElementById("imaginary-button").classList.remove("disabled");       
-    });
-}
-
-function showDirection() {
-
-    var tempFlow = d3.select("#graph-canvas").selectAll("temp-circle")
-        .data(edges).enter().append("circle")
-        .moveToBack()
-        .attr("r", 2)
-        .attr("cx", function(d) {                        
-            return margin + xScale(nodes[d.head_id - 1].x);
-        })
-        .attr("cy", function(d) {
-            return margin + yScale(nodes[d.head_id - 1].y);
-        })                
-        .attr("fill", "steelblue")
-        .transition().duration(2000)        
-        .attr("cx", function(d) {
-            return margin + xScale(nodes[d.tail_id - 1].x);
-        })
-        .attr("cy", function(d) {
-            return margin + yScale(nodes[d.tail_id - 1].y);
-        });
-        
-
-    tempFlow.remove();
 }
 
 function update(error, info) {
@@ -318,44 +275,19 @@ function update(error, info) {
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == JUNCTION;
         })
-        .transition().duration(500)
+        .transition().duration(300)
         .attr("r", 6)
-        .transition().duration(1000)
+        .transition().duration(400)
         .attr("fill", function(d) {
             return pressureScale(d.pressure);
         })        
-        .transition().duration(500)
+        .transition().duration(300)
         .attr("r", 4);
 
     d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
             return d.node_type == CONSUMER;
         })
-        .transition().duration(2000)
-        .attr("fill", function(d) {
-            if (d.d_satisfy && d.h_satisfy) {
-                return "#F6416C";
-            }
-            return "white"
-        });
-
-    // updateTable();
-}
-
-function update_node(error, info) {
-    nodes = _.merge(nodes, info.nodes);
-
-    d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
-            return d.node_type == JUNCTION;
-        })
-        .transition().duration(500)
-        .attr("r", 5)
-        .transition().duration(500)
-        .attr("r", 2);
-
-    d3.select("#graph-canvas").selectAll("circle").filter(function(d, i) {
-            return d.node_type == CONSUMER;
-        })
-        .transition().duration(2000)
+        .transition().duration(1000)
         .attr("fill", function(d) {
             if (d.d_satisfy && d.h_satisfy) {
                 return "#F6416C";
@@ -364,43 +296,71 @@ function update_node(error, info) {
         });
 }
 
-function update_edge(error, info) {
+function showDirection() {
 
-    edges = _.merge(edges, info.edges);
-
-    d3.select("#graph-canvas").selectAll("line")
-        .transition().duration(500)
-        .attr("stroke-width", function(d) {
-            return flowScale(d.flow) + 2;
+    var tempFlow = d3.select("#graph-canvas").selectAll("temp-circle")
+        .data(edges).enter().append("circle")
+        .moveToBack()
+        .attr("r", 2)
+        .attr("cx", function(d) {                        
+            return margin + xScale(nodes[d.head_id - 1].x);
         })
-        .transition().duration(500)
-        .attr("stroke-width", function(d) {
-            return flowScale(d.flow);
+        .attr("cy", function(d) {
+            return margin + yScale(nodes[d.head_id - 1].y);
+        })                
+        .attr("fill", "steelblue")
+        .transition().duration(2000)        
+        .attr("cx", function(d) {
+            return margin + xScale(nodes[d.tail_id - 1].x);
+        })
+        .attr("cy", function(d) {
+            return margin + yScale(nodes[d.tail_id - 1].y);
         });
+        
+
+    tempFlow.remove();
 }
 
-function updateData() {
+// ========== Main Function ========== //
+function initializeGraph(name) {
+    console.log("INITIALIZE")
+    state = name;
+    
+    nodes = [];
+    edges = [];
+    
+    energyHistory = [];
+    gapHistory = [];
+    pumpEnergyHistory = [];
+
+    d3.select("#graph-canvas").selectAll("*").remove();
+    var url_nodes = "/api/nodes/" + state;
+    var url_edges = "/api/edges/" + state;          
+    d3.queue()
+        .defer(d3.json, url_nodes)
+        .defer(d3.json, url_edges)              
+        .await(render);  
+}
+
+// ========== Predirection ========== //
+function solvePredirection() {
+    var url_direction = "/api/predirection/" + state;
+    d3.json(url_direction, function(info) {        
+        edges = _.merge(edges, info.json_list); 
+        document.getElementById("imaginary-button").classList.remove("disabled");       
+    });
+}
+
+// ========== Imaginary ========== //
+function solveImaginary() {
     var url = "/api/imaginary/" + state;
     d3.queue()
         .defer(d3.json, url)
         .await(update);
 }
 
-function updateData1() {
-    var url = "/api/imaginary_pressure/" + state;
-    d3.queue()
-        .defer(d3.json, url)
-        .await(update_node);
-}
-
-function updateData2() {
-    var url = "/api/max_flow/" + state;
-    d3.queue()
-        .defer(d3.json, url)
-        .await(update_edge);
-}
-
-function updateData3() {
+// ========== Iterative ========== //
+function solveIterative() {
     var iter = document.getElementById('iteration').value;
     if (!iter) {
         iter = 1;
