@@ -265,7 +265,6 @@ def create_folder(folder_name):
 
 def create_database():    
     db.create_all()
-    print('==============================')
     create_folder(DATA_FOLDER)
     tic = time.clock()
     create_network('Small.inp')
@@ -308,10 +307,10 @@ def reset_network(network_id):
     db.session.commit()
 
     flip = load_var(network, 'flip')
-    if flip is not None:
-        for i in flip:
-            edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
-        db.session.commit()
+    
+    for i in flip:
+        edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
+    db.session.commit()
     
     remove_var(network, 'flip')
     remove_var(network, 'A')
