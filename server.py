@@ -6,7 +6,6 @@ from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import PickleType
 
-from werkzeug import secure_filename
 import json
 import time
 import io
