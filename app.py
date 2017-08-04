@@ -265,6 +265,7 @@ def create_folder(folder_name):
 
 def create_database():    
     db.create_all()
+    print('==============================')
     create_folder(DATA_FOLDER)
     tic = time.clock()
     create_network('Small.inp')
