@@ -160,10 +160,11 @@
                     <p class="text-center">An interactive exploration of water distribution network</p>
                 </div>
             </div>
-            <div class="row" style="padding-top:20px">
+            <div class="row" style="padding-top:40px">
                 <div class="col-xs-8">
                     <svg id="graph-canvas" width="750" height="500"></svg>
-                    <div class="btn-group" style="padding-top:50px">
+                    <svg id="legend-canvas" width="750" height="84"></svg>
+                    <div class="btn-group" style="padding-top:10px">
                         <!-- <input name="small" type="button" class="btn btn-default" value="Small" onclick="reset(1)"> -->
                         <input name="showdirection" id="direction-button" type="button" class="btn btn-danger" style="width: 70px !important;" value="Pause" onclick="loopAnimation()">
                         <input name="predirection" type="button" data-toggle="tooltip" title="Find the lowest energy flow and correct the flow direction." class="btn btn-default " value="Predirection" onclick="solvePredirection()">

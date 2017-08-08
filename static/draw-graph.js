@@ -176,10 +176,10 @@ function drawEdges(xScale, yScale) {
         .attr("stroke-width", 4)
         .attr("stroke-opacity", 0.5)
         .on("mouseover", function() {
-            d3.select(this).attr("stroke-opacity", 1)
+            d3.select(this).attr("stroke", "red")
         })
         .on("mouseout", function() {
-            d3.select(this).attr("stroke-opacity", 0.5)
+            d3.select(this).attr("stroke", "steelblue")
         })
 
 
@@ -200,11 +200,60 @@ function drawEdges(xScale, yScale) {
     });
 }
 
+function drawLegend() {
+    var legendWidth = width
+    var legendHeight = 70
+
+    var legend = [];
+    legend.push({color: "#2c7bb6", text: "High Head"});
+    legend.push({color: "#B5F394", text: "Low Head"})
+    legend.push({color: "white", text: "Customer"});
+    legend.push({color: "orange", text: "Source"});
+    legend.push({color: "green", text: "Tank"});
+    
+    d3.select("#legend-canvas").selectAll("legend")
+    .data(legend).enter().append("circle")
+    .attr("r", 6)
+    .attr("fill", function(d) {
+        return d.color;
+    })        
+    .attr("cx", function(d, i) {
+        return 135 + 110*i;
+    })
+    .attr("cy", function(d) {
+        return 55;
+    })
+
+    d3.select("#legend-canvas").selectAll("legend")
+    .data(legend).enter().append("text")
+    .attr("r", 6)
+    .text(function(d) {
+        return d.text;
+    })   
+    .attr("fill", "grey")     
+    .attr("x", function(d, i) {
+        return 150 + 110*i;
+    })
+    .attr("y", function(d) {
+        return 59;
+    })
+
+    d3.select("#legend-canvas").selectAll("circle")
+        .filter(function(d, i) {
+            return d.text == "Customer";
+        })
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("stroke-opacity", 0.8);
+    
+}
+
 function drawGraph() {
     var scale = getPositionScale(nodes);
     pressureScale = getPressureScale(nodes);
     drawEdges(scale.x, scale.y);
     drawNodes(scale.x, scale.y, pressureScale);
+    drawLegend();
 }
 
 

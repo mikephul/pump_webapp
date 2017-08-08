@@ -32,7 +32,7 @@ def read_inp(file):
     line_num = 0
 
     for line in file:
-        print(line_num)
+        # print(line_num)
         line_num += 1
 
         if (line.isspace()):
@@ -69,7 +69,7 @@ def read_inp(file):
             next(file)
             continue
 
-        if (';PUMP: PUMP:' in line):
+        if (';PUMP: PUMP: PUMP:' in line):
             pump_id += 1
             read_format = 'pump_curve'
             continue
@@ -77,7 +77,7 @@ def read_inp(file):
         if ('[COORDINATES]' in line):
             next(file)
             read_format = 'coordinates'
-            continue
+            continue 
 
         if (read_format is 'node'):
             data = line.split()
@@ -203,7 +203,7 @@ def read_inp(file):
                          'x_value': x_value,
                          'y_value': y_value}
                 pumps.append(curve)
-                pump_id_proxy = pump_id
+                pump_id_proxy = pump_id       
 
         if (read_format is 'coordinates'):
             data = line.split()
