@@ -36,6 +36,7 @@ PIPE = 0
 PUMP = 1
 VALVE = 2
 
+EPS = 1e-2
 # ==================== Database Class ====================
 db = SQLAlchemy(app)
 
@@ -642,7 +643,7 @@ def get_valves_table(network_id):
 
         for edge in valves_edges:
             valve_flow.append(q[edge.edge_id-1])
-            valve_status.append(int(q[edge.edge_id-1] > 0))
+            valve_status.append(int(q[edge.edge_id-1] > EPS))
 
         return jsonify(json_list=[{'edge_id': edge.edge_id,
                                    'head_id': edge.head_id,
@@ -680,9 +681,38 @@ def get_five_lowest_flow_edes(network_id):
     five_lowest_flow_edges = Edge.query.filter(Edge.network.has(id=network_id)).order_by(Edge.flow.asc()).limit(5)
     return jsonify(json_list=[five_lowest_flow_edge.serialize for five_lowest_flow_edge in five_lowest_flow_edges])
 
-@app.route('/api/flip')
-def get_flip():    
-    return jsonify(joke)
+@app.route('/api/get_gap_statistics/<network_id>')
+def get_gap_statistics(network_id):
+	edges = Edge.query.filter(Edge.network.has(id=network_id))
+
+	valve_num = edges.filter(Edge.edge_type == VALVE).count()
+	valve_num_no_gap = edges.filter((Edge.edge_type == VALVE) & (Edge.gap < EPS)).count()
+	valve_num_gap_flow_positive = edges.filter(((Edge.edge_type == VALVE) & (Edge.gap > EPS)) & (Edge.flow > EPS)).count()
+	valve_num_gap_flow_zero = edges.filter(((Edge.edge_type == VALVE) & (Edge.gap > EPS)) & (Edge.flow< EPS)).count()
+	
+	pump_num = edges.filter(Edge.edge_type == PUMP).count()
+	pump_num_no_gap = edges.filter((Edge.edge_type == PUMP) & (Edge.gap < EPS)).count()
+	pump_num_gap_flow_positive = edges.filter(((Edge.edge_type == PUMP) & (Edge.gap > EPS)) & (Edge.flow > EPS)).count()
+	pump_num_gap_flow_zero = edges.filter(((Edge.edge_type == PUMP) & (Edge.gap > EPS)) & (Edge.flow < EPS)).count()
+
+	pipe_num = edges.filter(Edge.edge_type == PIPE).count()
+	pipe_num_no_gap = edges.filter((Edge.edge_type == PIPE) & (Edge.gap < EPS)).count()
+	pipe_num_gap_flow_positive = edges.filter(((Edge.edge_type == PIPE) & (Edge.gap > EPS)) & (Edge.flow > EPS)).count()
+	pipe_num_gap_flow_zero = edges.filter(((Edge.edge_type == PIPE) & (Edge.gap > EPS)) & (Edge.flow < EPS)).count()
+
+
+	valve_summary = {'no_gap': valve_num_no_gap,
+					'gap_posi_flow': valve_num_gap_flow_positive,
+					'gap_no_flow': valve_num_gap_flow_zero}
+	pump_summary = {'no_gap': pump_num_no_gap,
+					'gap_posi_flow': pump_num_gap_flow_positive,
+					'gap_no_flow': pump_num_gap_flow_zero}
+	pipe_summary = {'no_gap': pipe_num_no_gap,
+					'gap_posi_flow': pipe_num_gap_flow_positive,
+					'gap_no_flow': pipe_num_gap_flow_zero}
+
+	return jsonify(json_list = [valve_summary, pump_summary, pipe_summary])
+
 # @app.route('/api/pumps_table/<network_id>')
 # def get_pumps_table(network_id):
 #     pumps_edges = Pump.query.filter(Pump.network.has(id = network_id))
