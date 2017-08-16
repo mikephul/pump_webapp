@@ -18,6 +18,14 @@ VALVE = 2
 
 
 def read_inp(file):
+    """
+    my_method description
+    
+    @param x: An integer
+    @param y: An integer or string
+    
+    @return: Returns a sentence with your variables in it
+    """
     node_id = 0
     edge_id = 0
     pump_id = 0

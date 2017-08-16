@@ -178,12 +178,12 @@
                     <div class="btn-group" style="padding-top:10px">
                         <!-- <input name="small" type="button" class="btn btn-default" value="Small" onclick="reset(1)"> -->
                         <input name="showdirection" id="direction-button" type="button" class="btn btn-danger" style="width: 70px !important;" value="Pause" onclick="loopAnimation()">
-                        <input name="predirection" type="button" data-toggle="tooltip" title="Find the lowest energy flow and correct the flow direction." class="btn btn-default " value="Predirection" onclick="solvePredirection()">
-                        <input id="imaginary-button" data-toggle="tooltip" title="After predirection, pre-solve the feasible network." style="border-radius: 0px 4px 4px 0px;" type="button" class="btn btn-default disabled" value="Imaginary" onclick="solveImaginary()" />
+                        <input name="predirection" type="button" data-toggle="tooltip"  class="btn btn-default " value="Predirection" onclick="solvePredirection()">
+                        <input id="imaginary-button" data-toggle="tooltip" style="border-radius: 0px 4px 4px 0px;" type="button" class="btn btn-default disabled" value="Imaginary" onclick="solveImaginary()" />
                         <div class="input-group" style="width: 250; padding-left:20;">
                             <input id="iteration" type="text" class="form-control" placeholder="Iteration">
                             <span class="input-group-btn">
-                                <button id="iteration-button" data-toggle="tooltip" title="Iteratively improve solution from the imaginary." class="btn btn-default disabled" type="button" onclick="solveIterative()">Improve Solution</button>
+                                <button id="iteration-button" data-toggle="tooltip"  class="btn btn-default disabled" type="button" onclick="solveIterative()">Improve Solution</button>
                             </span>
                         </div>
                     </div>
