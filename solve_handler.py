@@ -4,6 +4,18 @@ from cvxpy import *
 
 # Rewrite it all as numpy array
 def predirection(A, L, d):
+    """
+    predirection
+    This function realize the predirection process.
+    
+    @param A: A matrix
+    @param L: A vector
+    @param d: A vector
+    
+    @return: Returns the objective value,
+    the A_pred and flip.
+    """
+
     num_e = A.shape[1]
 
     A_pred = np.copy(A)
@@ -29,6 +41,20 @@ def predirection(A, L, d):
 
 
 def solve_imaginary_flow(A, L1, dh_max, d):
+    """
+    solve_imaginary_flow
+    This function realize the imaginary flow 
+    calculation process.
+    
+    @param A: A matrix
+    @param L1: A vector
+    @param dh_max: A vector
+    @param d: A vector
+    
+    @return: Returns the objective value,
+    and flow q.
+    """
+
     num_e = A.shape[1]
 
     q = Variable(num_e, 1)
@@ -42,6 +68,22 @@ def solve_imaginary_flow(A, L1, dh_max, d):
 
 
 def solve_imaginary_pressure(A, L1, dh_max, hc, pump_head_list, qq):
+    """
+    solve_imaginary_pressure
+    This function realize the imaginary pressure 
+    calculation process.
+    
+    @param A: A matrix
+    @param L1: A vector
+    @param dh_max: A vector
+    @param hc: A vector
+    @param pump_head_list: A vector
+    @param qq: A vector
+    
+    @return: Returns the objective value,
+    pressure h and the gap of the edge.
+    """
+
     num_v = A.shape[0]
     h = Variable(num_v, 1)
     L1 = np.matrix(L1)
@@ -61,6 +103,20 @@ def solve_imaginary_pressure(A, L1, dh_max, hc, pump_head_list, qq):
 
 
 def solve_max_flow(A, L1, dh_max, d, hh):
+    """
+    solve_max_flow
+    This function maximize the flow.
+    
+    @param A: A matrix
+    @param L1: A vector
+    @param dh_max: A vector
+    @param d: A vector
+    @param hh: A vector
+    
+    @return: Returns the objective value,
+    flow q and the gap of the edge.
+    """
+
     num_e = A.shape[1]
     num_v = A.shape[0]
     L1 = np.matrix(L1)

@@ -19,12 +19,15 @@ VALVE = 2
 
 def read_inp(file):
     """
-    my_method description
+    read_inp 
+    This function read nodes, edges, 
+    pump curves data from inp file
+    and prepare data to be inserted 
+    into database.
     
-    @param x: An integer
-    @param y: An integer or string
+    @param file: A file pointer
     
-    @return: Returns a sentence with your variables in it
+    @return: Returns nodes, edges, pump curves data
     """
     node_id = 0
     edge_id = 0
@@ -228,10 +231,32 @@ def read_inp(file):
 
 
 def get_pump_edges(edges):
+    """
+    get_pump_edges 
+    This function gets pump edges 
+    based on edges data
+        
+    @param edges: A list of dict.
+    
+    @return: Returns pump edges
+    """
+
+
     return [edge for edge in edges if edge['edge_type'] == PUMP]
 
 
 def post_process_pumps(pumps, edges):
+    """
+    post_process_pumps 
+    This function gets pump curves based
+    on pumps and edges
+        
+    @param pumps: A list of dict.
+    @param edges: A list of dict.
+    
+    @return: Returns pump curves
+    """
+
     pump_curve = {}
     for pump in pumps:
         pump_id = int(pump['pump_id'])
@@ -273,6 +298,18 @@ def post_process_pumps(pumps, edges):
 
 
 def extract_var_edges(edges, num_v):
+    """
+    extract_var_edges 
+    This function gets indecent matrix A 
+    and lamda vector L
+        
+    @param edges: A list of dict.
+    @param num_v: scalar.
+    
+    @return: Returns indecent matrix A 
+    and lamda vector L
+    """
+
     num_e = len(edges)
     A = np.zeros((num_v, num_e))
     L = np.zeros(num_e)
@@ -290,6 +327,16 @@ def extract_var_edges(edges, num_v):
 
 
 def extract_var_nodes(nodes):
+    """
+    extract_var_nodes 
+    This function gets demand vector d
+    and minimum pressure vector hc
+        
+    @param nodes: A list of dict.
+    
+    @return: Returns demand vector d
+    and minimum pressure vector hc
+    """
     num_v = len(nodes)
     d = np.zeros(num_v)
     hc = np.zeros(num_v)
@@ -305,6 +352,18 @@ def extract_var_nodes(nodes):
 
 
 def extract_var_pumps(pump_curves, L):
+    """
+    extract_var_pumps 
+    This function gets dh_max, L_pump,
+    pump_head_list
+        
+    @param pump_curves: A list of dict.
+    @param L: A vector
+    
+    @return: Returns dh_max, L_pump,
+    pump_head_list
+    """
+
     num_e = L.shape[0]
     dh_max = np.zeros(num_e)
     L_pump = np.copy(L)
@@ -317,12 +376,34 @@ def extract_var_pumps(pump_curves, L):
 
 
 def save_var(network, filename, variable):
+    """
+    save_var 
+    This function saves/inserts the variable 
+    into a local file
+        
+    @param network: A network class object.
+    @param filename: A string.
+    @param variable: A numeric type.
+    
+    @return: no returns
+    """
+
     network_var_dir = get_var_dir(network)
     path = os.path.join(network_var_dir, filename)
     np.save(path, variable)
 
 
 def load_var(network, filename):
+    """
+    load_var 
+    This function extracts data from local file
+        
+    @param network: A network class object.
+    @param filename: A string.
+    
+    @return: Returns variable
+    """
+
     network_var_dir = get_var_dir(network)
     path = os.path.join(network_var_dir, filename)
     path += '.npy'
@@ -333,6 +414,16 @@ def load_var(network, filename):
     return output
 
 def remove_var(network, filename):
+    """
+    remove_var 
+    This function deletes specific local file
+        
+    @param network: A network class object.
+    @param filename: A string.
+    
+    @return: Returns boolean number
+    """
+
     network_var_dir = get_var_dir(network)
     path = os.path.join(network_var_dir, filename)
     path += '.npy'
@@ -344,5 +435,15 @@ def remove_var(network, filename):
     return output
 
 def get_var_dir(network):
+    """
+    get_var_dir 
+    This function get the directory based 
+    on specific network
+        
+    @param network: A network class object.
+    
+    @return: Returns a path
+    """
+
     network_var_dir = str(network.id) + '_' + network.name
     return os.path.join(DATA_FOLDER, network_var_dir)

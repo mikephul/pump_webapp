@@ -177,8 +177,19 @@ class Network(db.Model):
 
 # ==================== Create Database ====================
 def create_pumps(network, pump_curves):
-    for info in pump_curves:
-        pump = Pump(info['pump_id'],
+	"""
+    create_pumps
+    This function stores/inserts pump curve
+    data into database
+    
+    @param network: A network class object
+    @param pump_curves: A list of dict.
+    
+    @return: no returns
+    """
+
+	for info in pump_curves:
+		pump = Pump(info['pump_id'],
                     info['edge_id'],
                     info['head_id'],
                     info['tail_id'],
@@ -187,12 +198,23 @@ def create_pumps(network, pump_curves):
                     info['coeff'],
                     network)
         db.session.add(pump)
-    db.session.commit()
+	db.session.commit()
 
 
 def create_nodes(network, nodes):
-    for info in nodes:
-        node = Node(info['node_id'],
+	"""
+    create_nodes
+    This function stores/inserts nodes
+    data into database
+    
+    @param network: A network class object
+    @param nodes: A list of dict.
+    
+    @return: no returns
+    """
+
+	for info in nodes:
+		node = Node(info['node_id'],
                     info['node_name'],
                     info['demand'],
                     info['head'],
@@ -202,12 +224,23 @@ def create_nodes(network, nodes):
                     info['head'],
                     network)
         db.session.add(node)
-    db.session.commit()
+	db.session.commit()
 
 
 def create_edges(network, edges):
-    for info in edges:
-        edge = Edge(info['edge_id'],
+	"""
+    create_edges
+    This function stores/inserts edges
+    data into database
+    
+    @param network: A network class object
+    @param edges: A list of dict.
+    
+    @return: no returns
+    """
+
+	for info in edges:
+		edge = Edge(info['edge_id'],
                     info['head_id'],
                     info['tail_id'],
                     info['length'],
@@ -218,67 +251,98 @@ def create_edges(network, edges):
                     0.0,
                     network)
         db.session.add(edge)
-    db.session.commit()
+	db.session.commit()
 
 
 def create_network(name):
-    print("Network name: %s" % name)
+	"""
+    create_network
+    This function creates a network structure,
+    reads data from inp file, stores/inserts data 
+    into local files and database.
+    
+    @param name: A string
+    
+    @return: no returns
+    """
 
-    network = Network(name)
-    db.session.add(network)
-    db.session.commit()
+	print("Network name: %s" % name)
+
+	network = Network(name)
+	db.session.add(network)
+	db.session.commit()
 
     # Read info from .inp file
-    print("Read inp file ....")
-    file = open(name, 'r')
-    nodes, edges, pump_curves = read_inp(file)
+	print("Read inp file ....")
+	file = open(name, 'r')
+	nodes, edges, pump_curves = read_inp(file)
 
     # Get all variables from the network
-    print("Extract variables ....")
-    A_orig, L = extract_var_edges(edges, len(nodes))
-    d, hc = extract_var_nodes(nodes)
-    dh_max, L_pump, pump_head_list = extract_var_pumps(pump_curves, L)
+	print("Extract variables ....")
+	A_orig, L = extract_var_edges(edges, len(nodes))
+	d, hc = extract_var_nodes(nodes)
+	dh_max, L_pump, pump_head_list = extract_var_pumps(pump_curves, L)
 
     # Save varibles locally
-    print("Save varibles ....")
-    network_var_dir = get_var_dir(network)
-    create_folder(network_var_dir)
+	print("Save varibles ....")
+	network_var_dir = get_var_dir(network)
+	create_folder(network_var_dir)
 
-    save_var(network, 'A_orig', A_orig)
-    save_var(network, 'L', L)
-    save_var(network, 'd', d)
-    save_var(network, 'hc', hc)
-    save_var(network, 'dh_max', dh_max)
-    save_var(network, 'L_pump', L_pump)
-    save_var(network, 'pump_head_list', pump_head_list)
+	save_var(network, 'A_orig', A_orig)
+	save_var(network, 'L', L)
+	save_var(network, 'd', d)
+	save_var(network, 'hc', hc)
+	save_var(network, 'dh_max', dh_max)
+	save_var(network, 'L_pump', L_pump)
+	save_var(network, 'pump_head_list', pump_head_list)
 
     # Save nodes, edges to database
-    print("Insert database ....")
-    create_nodes(network, nodes)
-    create_edges(network, edges)
-    create_pumps(network, pump_curves)
+	print("Insert database ....")
+	create_nodes(network, nodes)
+	create_edges(network, edges)
+	create_pumps(network, pump_curves)
 
 
 def create_folder(folder_name):
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+	"""
+    create_folder
+    This function create a folder if
+    the folder_name doesn't exist.
+    
+    @param folder_name: A path
+    
+    @return: no returns
+    """
+
+	if not os.path.exists(folder_name):
+		os.makedirs(folder_name)
 
 
-def create_database():    
-    db.create_all()
-    print('==============================')
-    create_folder(DATA_FOLDER)
-    tic = time.clock()
-    create_network('Small.inp')
-    toc = time.clock()
-    print('Small use time: %f' % (toc-tic))
+def create_database():
+	"""
+    create_database
+    This function create a database.
+    
+    @param  : null
+    
+    @return: no returns
+    """
+
+
+	db.create_all()
+	print('==============================')
+	create_folder(DATA_FOLDER)
+	tic = time.clock()
+	create_network('Small.inp')
+	toc = time.clock()
+	print('Small use time: %f' % (toc-tic))
 
 #    tic = time.clock()
 #    create_network('Big.inp')
 #    toc = time.clock()
 #    print('Big use time: %f' % (toc-tic))
 
-    db.session.commit()
+	db.session.commit()
 
 # ==================== Initialize new database ====================
 
@@ -290,174 +354,223 @@ create_database()
 # Primary routes
 @app.route('/')
 def index():
-    return render_template("index.html")
+	"""
+    index
+    This function creates web page.
+    
+    @param  : null
+    
+    @return: no returns
+    """
+
+	return render_template("index.html")
 
 @app.route('/api/reset/<network_id>')
 def reset_network(network_id):
-    network = Network.query.filter_by(id=network_id).first()
-    edges = Edge.query.filter(Edge.network.has(id=network_id))
-    nodes = Node.query.filter(Node.network.has(id=network_id))
+	"""
+    reset_network
+    This function resets the network
+    
+    @param network_id: A scalar
+    
+    @return: Returns a string "Success"
+    """
+
+	network = Network.query.filter_by(id=network_id).first()
+	edges = Edge.query.filter(Edge.network.has(id=network_id))
+	nodes = Node.query.filter(Node.network.has(id=network_id))
 
     # Reset flow, pressure and gap in database
-    for node in nodes:
-        node.pressure = node.head
+	for node in nodes:
+		node.pressure = node.head
 
-    for edge in edges:
-        edge.flow = 0.0
-        edge.gap = 0.0
+	for edge in edges:
+		edge.flow = 0.0
+		edge.gap = 0.0
 
-    db.session.commit()
+	db.session.commit()
 
-    flip = load_var(network, 'flip')
+	flip = load_var(network, 'flip')
     
-    for i in flip:
-        edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
-    db.session.commit()
+	for i in flip:
+		edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
+	db.session.commit()
     
-    remove_var(network, 'flip')
-    remove_var(network, 'A')
-    remove_var(network, 'q')
-    remove_var(network, 'h')
+	remove_var(network, 'flip')
+	remove_var(network, 'A')
+	remove_var(network, 'q')
+	remove_var(network, 'h')
 
-    return 'Success'
+	return 'Success'
 
 # Solver routes
 @app.route('/api/predirection/<network_id>')
 def get_predirection(network_id):
-    network = Network.query.filter_by(id=network_id).first()
-    edges = Edge.query.filter(Edge.network.has(id=network_id))
+	"""
+    get_predirection
+    This function realizes the predirection process.
     
-    A = load_var(network, 'A')
+    @param network_id: A scalar
     
-    if A is None:
+    @return: Returns the edge direction.
+    """
+
+	network = Network.query.filter_by(id=network_id).first()
+	edges = Edge.query.filter(Edge.network.has(id=network_id))
+    
+	A = load_var(network, 'A')
+    
+	if A is None:
         # Load variables
-        A_orig = load_var(network, 'A_orig')
-        L = load_var(network, 'L')
-        d = load_var(network, 'd')
+		A_orig = load_var(network, 'A_orig')
+		L = load_var(network, 'L')
+		d = load_var(network, 'd')
 
         # Solve
-        obj, A_pred, flip = predirection(A_orig, L, d)
+		obj, A_pred, flip = predirection(A_orig, L, d)
 
         # Save to file
-        save_var(network, 'A', A_pred)
-        save_var(network, 'flip', flip)
+		save_var(network, 'A', A_pred)
+		save_var(network, 'flip', flip)
 
         # Filp the direction to make flow feasible
-        for i in flip:
-            edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
-        db.session.commit()
+		for i in flip:
+			edges[i].head_id, edges[i].tail_id = edges[i].tail_id, edges[i].head_id
+		db.session.commit()
 
-    return jsonify(json_list=[edge.direction for edge in edges])
+	return jsonify(json_list=[edge.direction for edge in edges])
 
 
 @app.route('/api/imaginary/<network_id>')
 def get_imaginary_flow_and_pressure(network_id):
-    network = Network.query.filter_by(id=network_id).first()
-    edges_data = Edge.query.filter(Edge.network.has(id=network_id))
-    nodes_data = Node.query.filter(Node.network.has(id=network_id))
+	"""
+    get_imaginary_flow_and_pressure
+    This function realizes the imaginary process.
+    
+    @param network_id: A scalar
+    
+    @return: Returns the objective of imaginary_flow,
+    the objective of imaginary pressure, the nodes and
+    edges data
+    """
+
+	network = Network.query.filter_by(id=network_id).first()
+	edges_data = Edge.query.filter(Edge.network.has(id=network_id))
+	nodes_data = Node.query.filter(Node.network.has(id=network_id))
 
     # Load variables
-    A = load_var(network, 'A')
-    L_pump = load_var(network, 'L_pump')
-    dh_max = load_var(network, 'dh_max')
-    d = load_var(network, 'd')
-    hc = load_var(network, 'hc')
-    pump_head_list = load_var(network, 'pump_head_list')
+	A = load_var(network, 'A')
+	L_pump = load_var(network, 'L_pump')
+	dh_max = load_var(network, 'dh_max')
+	d = load_var(network, 'd')
+	hc = load_var(network, 'hc')
+	pump_head_list = load_var(network, 'pump_head_list')
 
     # Solve
-    obj_flow, q = solve_imaginary_flow(A, L_pump, dh_max, d)
-    obj_pressure, h, gap_edge = solve_imaginary_pressure(
+	obj_flow, q = solve_imaginary_flow(A, L_pump, dh_max, d)
+	obj_pressure, h, gap_edge = solve_imaginary_pressure(
         A, L_pump, dh_max, hc, pump_head_list, q)
 
     # Save to file
-    save_var(network, 'q', q)
-    save_var(network, 'h', h)
+	save_var(network, 'q', q)
+	save_var(network, 'h', h)
 
     # Update q, h, gap to database
-    edges = []
-    for i, item in enumerate(q):
-        flow = item.tolist()[0][0]
-        edge = {'edge_id': i + 1, 'flow': round(flow * 1000, 2)}
-        edges_data[i].flow = flow
-        edges.append(edge)
+	edges = []
+	for i, item in enumerate(q):
+		flow = item.tolist()[0][0]
+		edge = {'edge_id': i + 1, 'flow': round(flow * 1000, 2)}
+		edges_data[i].flow = flow
+		edges.append(edge)
 
-    nodes = []
-    for i, item in enumerate(h):
-        pressure = item.tolist()[0][0]
-        node = {'node_id': i + 1, 'pressure': pressure}
-        nodes_data[i].pressure = pressure
-        nodes.append(node)
+	nodes = []
+	for i, item in enumerate(h):
+		pressure = item.tolist()[0][0]
+		node = {'node_id': i + 1, 'pressure': pressure}
+		nodes_data[i].pressure = pressure
+		nodes.append(node)
 
-    for i, item in enumerate(gap_edge):
-        edges_data[i].gap = item
-    db.session.commit()
+	for i, item in enumerate(gap_edge):
+		edges_data[i].gap = item
+	db.session.commit()
 
-    return jsonify(obj_flow=obj_flow, obj_pressure=obj_pressure, nodes=nodes, edges=edges)
+	return jsonify(obj_flow=obj_flow, obj_pressure=obj_pressure, nodes=nodes, edges=edges)
 
 
 @app.route('/api/iter/<network_id>/<iter>')
 def get_iterative(network_id, iter):
-    iter = int(iter)
-    network = Network.query.filter_by(id=network_id).first()
-    edges_data = Edge.query.filter(Edge.network.has(id=network_id))
-    nodes_data = Node.query.filter(Node.network.has(id=network_id))
+	"""
+    get_iterative
+    This function realizes the iterative process.
+    
+    @param network_id: A scalar
+    @param iter: A scalar
+    
+    @return: Returns the gap, the energy loss,
+    the pump energy, nodes and edges data.
+    """
+
+	iter = int(iter)
+	network = Network.query.filter_by(id=network_id).first()
+	edges_data = Edge.query.filter(Edge.network.has(id=network_id))
+	nodes_data = Node.query.filter(Node.network.has(id=network_id))
 
     # Load variables
-    A = load_var(network, 'A')
-    L_pump = load_var(network, 'L_pump')
-    dh_max = load_var(network, 'dh_max')
-    d = load_var(network, 'd')
-    hc = load_var(network, 'hc')
-    pump_head_list = load_var(network, 'pump_head_list')
-    q = load_var(network, 'q')
+	A = load_var(network, 'A')
+	L_pump = load_var(network, 'L_pump')
+	dh_max = load_var(network, 'dh_max')
+	d = load_var(network, 'd')
+	hc = load_var(network, 'hc')
+	pump_head_list = load_var(network, 'pump_head_list')
+	q = load_var(network, 'q')
 
-    gap = []
-    energy_loss = []
-    energy_pump = []
+	gap = []
+	energy_loss = []
+	energy_pump = []
 
-    for i in range(iter):
+	for i in range(iter):
         # Solve
-        obj_pressure, h, gap_edge = solve_imaginary_pressure(
+		obj_pressure, h, gap_edge = solve_imaginary_pressure(
             A, L_pump, dh_max, hc, pump_head_list, q)
-        obj_flow, q, gap_edge = solve_max_flow(A, L_pump, dh_max, d, h)
+		obj_flow, q, gap_edge = solve_max_flow(A, L_pump, dh_max, d, h)
 
         # Gap
-        gap.append(obj_pressure)
+		gap.append(obj_pressure)
 
         # Energy pump
-        energy_pump_tmp = dh_max.T*q - \
+		energy_pump_tmp = dh_max.T*q - \
             L_pump[dh_max > 0].T*np.power(q[dh_max > 0], 3).T
-        energy_pump.append(energy_pump_tmp.item())
+		energy_pump.append(energy_pump_tmp.item())
 
         # Energy loss
-        energy_loss_tmp = L_pump.T * \
+		energy_loss_tmp = L_pump.T * \
             np.power(q, 3) - L_pump[dh_max > 0].T*np.power(q[dh_max > 0], 3).T
-        energy_loss.append(energy_loss_tmp.item())
+		energy_loss.append(energy_loss_tmp.item())
 
     # Save to file
-    save_var(network, 'q', q)
-    save_var(network, 'h', h)
+	save_var(network, 'q', q)
+	save_var(network, 'h', h)
 
     # Update q, h, gap to database
-    edges = []
-    for i, item in enumerate(q):
-        flow = item.tolist()[0][0]
-        edge = {'edge_id': i + 1, 'flow': round(flow * 1000, 2)}
-        edges_data[i].flow = flow
-        edges.append(edge)
+	edges = []
+	for i, item in enumerate(q):
+		flow = item.tolist()[0][0]
+		edge = {'edge_id': i + 1, 'flow': round(flow * 1000, 2)}
+		edges_data[i].flow = flow
+		edges.append(edge)
 
-    nodes = []
-    for i, item in enumerate(h):
-        pressure = item.tolist()[0][0]
-        node = {'node_id': i + 1, 'pressure': pressure}
-        nodes_data[i].pressure = pressure
-        nodes.append(node)
+	nodes = []
+	for i, item in enumerate(h):
+		pressure = item.tolist()[0][0]
+		node = {'node_id': i + 1, 'pressure': pressure}
+		nodes_data[i].pressure = pressure
+		nodes.append(node)
 
-    for i, item in enumerate(gap_edge):
-        edges_data[i].gap = item
-    db.session.commit()
+	for i, item in enumerate(gap_edge):
+		edges_data[i].gap = item
+	db.session.commit()
 
-    return jsonify(gap=gap, energy_loss=energy_loss, energy_pump=energy_pump, nodes=nodes, edges=edges)
+	return jsonify(gap=gap, energy_loss=energy_loss, energy_pump=energy_pump, nodes=nodes, edges=edges)
 
 # @app.route('/pump_curve')
 # def pump_curve():
@@ -466,63 +579,149 @@ def get_iterative(network_id, iter):
 # Get Information
 @app.route('/api/nodes/<network_id>')
 def get_nodes(network_id):
-    nodes = Node.query.filter(Node.network.has(id=network_id))
-    return jsonify(json_list=[node.serialize for node in nodes])
+	"""
+    get_nodes
+    This function get the nodes data
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns nodes data.
+    """
+
+	nodes = Node.query.filter(Node.network.has(id=network_id))
+	return jsonify(json_list=[node.serialize for node in nodes])
 
 
 @app.route('/api/nodes/<network_id>/<node_id>')
 def get_node(network_id, node_id):
-    nodes = Node.query.filter(Node.network.has(
+	"""
+    get_node
+    This function get the specifice node data
+    from database.
+    
+    @param network_id: A scalar
+    @param node_id: A scalar
+    
+    @return: Returns specific node data.
+    """
+
+	nodes = Node.query.filter(Node.network.has(
         id=network_id) & (Node.node_id == node_id))
-    return jsonify(json_list=[node.serialize for node in nodes])
+	return jsonify(json_list=[node.serialize for node in nodes])
 
 
 @app.route('/api/edges/<network_id>')
 def get_edges(network_id):
-    edges = Edge.query.filter(Edge.network.has(id=network_id))
-    return jsonify(json_list=[edge.serialize for edge in edges])
+	"""
+    get_edges
+    This function get edges data
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns edge data.
+    """
+
+	edges = Edge.query.filter(Edge.network.has(id=network_id))
+	return jsonify(json_list=[edge.serialize for edge in edges])
 
 
 @app.route('/api/edges/<network_id>/<edge_id>')
 def get_edge(network_id, edge_id):
-    edges = Edge.query.filter(Edge.network.has(
+	"""
+    get_edge
+    This function get a specific edge data
+    from database.
+    
+    @param network_id: A scalar
+    @param edge_id: A scalar
+    
+    @return: Returns a specific edge data.
+    """
+
+	edges = Edge.query.filter(Edge.network.has(
         id=network_id) & (Edge.edge_id == edge_id))
-    return jsonify(json_list=[edge.serialize for edge in edges])
+	return jsonify(json_list=[edge.serialize for edge in edges])
 
 
 @app.route('/api/pumps/<network_id>')
 def get_pumps(network_id):
-    pumps = Pump.query.filter(Pump.network.has(id=network_id))
-    return jsonify(json_list=[pump.serialize for pump in pumps])
+	"""
+    get_pumps
+    This function get pumps data
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns pumps data.
+    """
+
+	pumps = Pump.query.filter(Pump.network.has(id=network_id))
+	return jsonify(json_list=[pump.serialize for pump in pumps])
 
 
 @app.route('/api/pumps/<network>/<pump_id>')
 def get_pump(network, pump_id):
-    pumps = Pump.query.filter(Pump.network.has(
+	"""
+    get_pump
+    This function get a specific pump data
+    from database.
+    
+    @param network_id: A scalar
+    @param pump_id: A scalar
+    
+    @return: Returns a specific pump data.
+    """
+
+	pumps = Pump.query.filter(Pump.network.has(
         id=network) & (Pump.pump_id == pump_id))
-    return jsonify(json_list=[pump.serialize for pump in pumps])
+	return jsonify(json_list=[pump.serialize for pump in pumps])
 
 
 @app.route('/api/networks')
 def get_networks():
-    networks = Network.query.all()
-    return jsonify(json_list=[network.serialize for network in networks])
+	"""
+    get_networks
+    This function get a network data
+    
+    @param : null
+
+    
+    @return: Returns network data.
+    """
+
+	networks = Network.query.all()
+	return jsonify(json_list=[network.serialize for network in networks])
 
 
 # Table routes
 @app.route('/api/summary_table/<network_id>')
 def get_summary_table(network_id):
-    nodes = Node.query.filter(Node.network.has(id=network_id))
-    edges = Edge.query.filter(Edge.network.has(id=network_id))
-    name = Network.query.filter_by(id=network_id).first().name
-    num_node = nodes.count()
-    num_edge = edges.count()
-    num_customer = nodes.filter(Node.node_type == CUSTOMER).count()
-    num_source = nodes.filter(Node.node_type == SOURCE).count()
-    num_tank = nodes.filter(Node.node_type == TANK).count()
-    num_pump = edges.filter(Edge.edge_type == PUMP).count()
-    num_valve = edges.filter(Edge.edge_type == VALVE).count()
-    output = {'name': name,
+	"""
+    get_summary_table
+    This function get a summary of the network info
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns network name, node number, edge number,
+    customer number, source number, pump number and valve
+    number.
+    """
+
+
+	nodes = Node.query.filter(Node.network.has(id=network_id))
+	edges = Edge.query.filter(Edge.network.has(id=network_id))
+	name = Network.query.filter_by(id=network_id).first().name
+	num_node = nodes.count()
+	num_edge = edges.count()
+	num_customer = nodes.filter(Node.node_type == CUSTOMER).count()
+	num_source = nodes.filter(Node.node_type == SOURCE).count()
+	num_tank = nodes.filter(Node.node_type == TANK).count()
+	num_pump = edges.filter(Edge.edge_type == PUMP).count()
+	num_valve = edges.filter(Edge.edge_type == VALVE).count()
+	output = {'name': name,
               'num_node': num_node,
               'num_edge': num_edge,
               'num_customer': num_customer,
@@ -530,11 +729,21 @@ def get_summary_table(network_id):
               'num_tank': num_tank,
               'num_pump': num_pump,
               'num_valve': num_valve}
-    return jsonify(output)
+	return jsonify(output)
 
 
 @app.route('/api/customers_table/<network_id>')
 def get_customers_table(network_id):
+	"""
+    get_customers_table
+    This function get a summary of customer info
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns customer statistics data
+    """
+
     customers_nodes = Node.query.filter(Node.network.has(
         id=network_id) & (Node.node_type == CUSTOMER))
     network = Network.query.filter_by(id=network_id).first()
@@ -587,6 +796,16 @@ def get_customers_table(network_id):
 
 @app.route('/api/sources_table/<network_id>')
 def get_sources_table(network_id):
+	"""
+    get_sources_table
+    This function get a summary of source info
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns source statistics data
+    """
+
     sources_nodes = Node.query.filter(Node.network.has(id=network_id) & (Node.node_type == SOURCE))
     network = Network.query.filter_by(id=network_id).first()
     A = load_var(network, 'A')
@@ -630,6 +849,16 @@ def get_sources_table(network_id):
 
 @app.route('/api/valves_table/<network_id>')
 def get_valves_table(network_id):
+	"""
+    get_valves_table
+    This function get a summary of valve info
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns valve statistics data
+    """
+
     valves_edges = Edge.query.filter(Edge.network.has(id=network_id) & (Edge.edge_type == VALVE))
     network = Network.query.filter_by(id=network_id).first()
     q = load_var(network, 'q')
@@ -660,29 +889,80 @@ def get_valves_table(network_id):
 
 @app.route('/api/five_highest_pressure/<network_id>')
 def get_five_highest_pressure_nodes(network_id):
+	"""
+    get_five_highest_pressure_nodes
+    This function get five nodes with highest pressure
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns five nodes data with highest pressure
+    """
+
     five_highest_pressure_nodes = Node.query.filter(Node.network.has(id=network_id)).order_by(Node.pressure.desc()).limit(5)
     return jsonify(json_list=[node.serialize for node in five_highest_pressure_nodes])
 
 
 @app.route('/api/five_lowest_pressure/<network_id>')
 def get_five_lowest_pressure_nodes(network_id):
+	"""
+    get_five_lowest_pressure_nodes
+    This function get five nodes with lowest pressure
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns five nodes data with lowest pressure
+    """
+
     five_lowest_pressure_nodes = Node.query.filter(Node.network.has(id=network_id)).order_by(Node.pressure.asc()).limit(5)
     return jsonify(json_list=[node.serialize for node in five_lowest_pressure_nodes])
 
 
 @app.route('/api/five_highest_flow/<network_id>')
 def get_five_highest_flow_edes(network_id):
+	"""
+    get_five_highest_flow_edes
+    This function get five edges with highest flow
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns five edge data with highest flow
+    """
+
     five_highest_flow_edges = Edge.query.filter(Edge.network.has(id=network_id)).order_by(Edge.flow.desc()).limit(5)
     return jsonify(json_list=[five_highest_flow_edge.serialize for five_highest_flow_edge in five_highest_flow_edges])
 
 
 @app.route('/api/five_lowest_flow/<network_id>')
 def get_five_lowest_flow_edes(network_id):
+	"""
+    get_five_lowest_flow_edes
+    This function get five edges with lowest flow
+    from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns five edge data with lowest flow
+    """
+
     five_lowest_flow_edges = Edge.query.filter(Edge.network.has(id=network_id)).order_by(Edge.flow.asc()).limit(5)
     return jsonify(json_list=[five_lowest_flow_edge.serialize for five_lowest_flow_edge in five_lowest_flow_edges])
 
 @app.route('/api/get_gap_statistics/<network_id>')
 def get_gap_statistics(network_id):
+	"""
+    get_gap_statistics
+    This function get gap info of valves, pump and
+    pipe from database.
+    
+    @param network_id: A scalar
+    
+    @return: Returns gap info of valves, pump and
+    pipe
+    """
+
 	edges = Edge.query.filter(Edge.network.has(id=network_id))
 
 	valve_num = edges.filter(Edge.edge_type == VALVE).count()
