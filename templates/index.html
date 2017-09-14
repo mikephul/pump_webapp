@@ -70,7 +70,7 @@
     <script>
         d3_version4 = d3
         window.d3 = null
-    </script>>
+    </script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/d3-queue.v3.min.js"></script>
     <script src="https://d3js.org/d3-color.v1.min.js"></script>
@@ -111,8 +111,6 @@
     <script src="{{ url_for('static', filename='write-table.js') }}"></script>
     <!-- draw graph -->
     <script src="{{ url_for('static', filename='draw-graph.js') }}"></script>
-    <!-- analysis -->
-    <script src="{{ url_for('static', filename='draw-analysis.js') }}"></script>
 
     <!-- Navigation -->
     <div class="navbar navbar-default navbar-fixed-top" role="navigation" style="">
@@ -209,10 +207,7 @@
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="plotFlowHist()">Flow
-                                    </label>
-                                    <label class="radio-inline">
-                                        <input type="radio" name="optradio" onclick="plotAnalysis()">Analysis
-                                    </label>
+                                    </label>                                
                                     </br>
                                     <label class="radio-inline">
                                         <input type="radio" name="optradio" onclick="plotGapHist()">Gap
