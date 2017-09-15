@@ -718,3 +718,9 @@ def get_gap_statistics(network_id):
 #     pumps_edges = Pump.query.filter(Pump.network.has(id = network_id))
 # return jsonify(pumps_edges_list = [pumps_edge.serialize for pumps_edge
 # in pumps_edges])
+
+if __name__=='__main__':
+    from gevent.wsgi import WSGIServer
+    http_server = WSGIServer(('0.0.0.0', 5000), app)
+    http_server.serve_forever()
+    # app.run(host='0.0.0.0', debug=True, port=5000)
