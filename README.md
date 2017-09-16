@@ -14,7 +14,7 @@ cd pump_webapp
 4. Install [mosek license file](https://www.mosek.com/resources/academic-license)
 5. Make sure that the project folder contains the .inp file that describe the water distribution network. (We include the Small.inp and Big.inp in the project.) Run flask application with the script below. This will run the application in the debug mode. You can turn off the debug mode in the file. 
 ```
-bash run_flask
+python app.py Small.inp
 ```
 6. The default port is 5000. You can see the application at
 ```

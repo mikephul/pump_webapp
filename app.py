@@ -12,6 +12,7 @@ import io
 import sqlite3
 import numpy as np
 import shutil
+import sys
 from cvxpy import *
 
 from io_handler import *
@@ -269,9 +270,11 @@ def create_database():
     print('==============================')
     create_folder(DATA_FOLDER)
     tic = time.clock()
-    create_network('Small.inp')
+    print(sys.argv[0])
+    print(sys.argv[1])
+    create_network(sys.argv[1])
     toc = time.clock()
-    print('Small use time: %f' % (toc-tic))
+    print('%s use time: %f' % (sys.argv[1], toc-tic))
 
 #    tic = time.clock()
 #    create_network('Big.inp')
